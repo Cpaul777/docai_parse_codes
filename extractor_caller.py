@@ -16,10 +16,10 @@ project_id = "medtax-ocr-prototype"
 
 # Processor ID as hexadecimal characters.
 # Not to be confused with the Processor Display Name.
-processor_id = "62a355c556d5981"
+processor_id = "62a355c556d5981" #This is the invoice parser id (default) 
 
 # Optional for specific version. Example: pretrained-ocr-v1.0-2020-09-23
-processor_version_id = "420979daa7968661"
+processor_version_id = "420979daa7968661" #For specific version of parser  
 
 # Processor location. For example: "us" or "eu".
 location = "us"
@@ -182,21 +182,21 @@ def process_output(output_bucket, output_prefix):
 
 def main():
 
-    #Preprocess part
-    input = preprocess.main()
+    # #Preprocess part
+    # input = preprocess.main()
 
     print("Starting the process...")
 
     # Path to the output
-    gcs_output_uri = "gs://practice_sample_training/docai/invoice_process_path/"
+    gcs_output_uri = "gs://practice_sample_training/docai/process_path/"
 
     # Configure Input pathing.
-    gcs_input_uri = f"gs://practice_sample_training/{input}"
+    gcs_input_uri = "gs://practice_sample_training/training_sample/form_2307_intern/2307 - BEA SAMPLE (1).pdf"
 
-    input_mime_type ="image/png"
+    input_mime_type ="application/pdf"
 
     #This is for whole folder process 
-    gcs_input_prefix = f"gs://practice_sample_training/{input.split('/')[0]}/"
+    gcs_input_prefix = "gs://practice_sample_training/form_2307_intern/"
 
     batch_process_documents(
         project_id=project_id,
