@@ -1,6 +1,7 @@
 from datetime import datetime
 from google.cloud import storage
 from dateutil import parser
+
 import json
 
 
@@ -65,8 +66,16 @@ def handle_data(bucket, input_prefix):
         print("Invalid date")
         return
 
+    count = 0
+    # Confidence Level Average
+    for key, value in json_data:
+        if "_confidence" in key
+        confidence +=  value
+        count++
+    confidence = confidence / count
     try:
         print(json.dumps(field_values, indent=4))
+        return field_values
     except Exception as e:
         print(f"Error processing output: {e}")
 
