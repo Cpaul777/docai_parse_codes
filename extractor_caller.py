@@ -16,7 +16,9 @@ project_id = "medtax-ocr-prototype"
 
 # Processor ID as hexadecimal characters.
 # Not to be confused with the Processor Display Name.
-processor_id = "62a355c556d5981" #This is the invoice parser id (default) 
+
+processor_id = "7e831835ff6703a" #This is the invoice parser id (default) 
+
 
 # Optional for specific version. Example: pretrained-ocr-v1.0-2020-09-23
 processor_version_id = "420979daa7968661" #For specific version of parser  
@@ -191,7 +193,7 @@ def main():
     gcs_output_uri = "gs://practice_sample_training/docai/process_path/"
 
     # Configure Input pathing.
-    gcs_input_uri = "gs://practice_sample_training/training_sample/form_2307_intern/2307 - BEA SAMPLE (1).pdf"
+    gcs_input_uri = "gs://practice_sample_training/training_sample/form_2307_intern/2307 - BEA  SAMPLE (2).pdf"
 
     input_mime_type ="application/pdf"
 
@@ -204,7 +206,7 @@ def main():
         processor_id=processor_id,
         gcs_output_uri=gcs_output_uri,
         gcs_input_uri=gcs_input_uri,
-        # processor_version_id=processor_version_id,
+        processor_version_id=processor_version_id,
         input_mime_type=input_mime_type,
         gcs_input_prefix=gcs_input_prefix,
     )

@@ -1,0 +1,20 @@
+# GCP service account key
+
+
+# Ignore zip archives
+*.zip
+
+# Python virtual environment
+venv/
+.env/
+
+# IDE/project files
+.idea/
+.vscode/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# OS-specific files
+.DS_Store
