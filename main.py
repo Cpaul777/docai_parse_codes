@@ -6,13 +6,6 @@ import extractor_caller
 import handle_data
 import preprocess
 
-@cloud_event
-def hello_gcs(event):
-    print("Hello GCS!")
-    print(f"Event Data: {event.data}")
-    print("DONEDONEDONEDONEDONEDONEDONEDONE")
-    print(f"Event ID: {event['id']}")
-
 def trigger(event: CloudEvent, context: Any):
     data = event.data
 
