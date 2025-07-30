@@ -10,5 +10,7 @@ steps:
           --trigger-event google.cloud.storage.object.v1.finalized \
           --trigger-resource run-sources-medtax-ocr-prototype-us-central1 \
           --region us-central1 \
-          --source . \
-          --project medtax-ocr-prototype 
+          --project medtax-ocr-prototype
+
+options:
+  logging: CLOUD_LOGGING_ONLY
