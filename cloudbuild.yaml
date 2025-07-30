@@ -5,6 +5,7 @@ steps:
       - -c
       - |
         gcloud functions deploy document-parser-function \
+          --gen2 \
           --entry-point trigger \
           --runtime python311 \
           --trigger-event google.cloud.storage.object.v1.finalized \
