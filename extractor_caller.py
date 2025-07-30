@@ -181,6 +181,9 @@ def process_output(output_bucket, output_prefix):
         )
         print(f"Extracted fields saved to: gs://{output_bucket}/{output_blob_name}")
 
+def connect():
+    print("You are connected to extractor_caller.py")
+
 def main():
 
     # #Preprocess part
@@ -210,4 +213,6 @@ def main():
         gcs_input_prefix=gcs_input_prefix,
     )
 
-main()
+
+if __name__ == '__main__':
+    main()

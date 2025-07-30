@@ -1,0 +1,14 @@
+steps:
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        gcloud functions deploy document-parser-function \
+          --entry-point trigger \
+          --runtime python311 \
+          --trigger-event google.cloud.storage.object.v1.finalized \
+          --trigger-resource run-sources-medtax-ocr-prototype-us-central1 \
+          --region us-central1 \
+          --source . \
+          --project medtax-ocr-prototype 

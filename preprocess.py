@@ -83,6 +83,9 @@ def preprocess_like_docai(bucket_name, input_blob_name, output_blob_name):
     print(f"✅ Uploaded processed image to: gs://{bucket_name}/{final_blob}")
     return f"gs://{bucket_name}/{final_blob}"
 
+def connect():
+    print("You are connected to extractor_caller.py")
+
 
 def main():
     return preprocess_like_docai(
@@ -91,4 +94,6 @@ def main():
         output_blob_name="docai/page_76_file(3).png"
     )
 
-main()
+
+if __name__ == '__main__':
+    main()

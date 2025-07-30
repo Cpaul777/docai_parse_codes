@@ -63,18 +63,19 @@ def handle_data(bucket, input_prefix):
                 field_values[key] = value
     
     if not validate_date_range(field_values["from_date"], field_values["to_date"]):
-        print("Invalid date")
-        return
+        raise ValueError("Invalid date range: 'from_date' is more recent than 'to_date'.")
 
     count = 0
     # Confidence Level Average
     for key, value in json_data:
-        if "_confidence" in key
-        confidence +=  value
-        count++
+        if "_confidence" in key:
+            confidence += value 
+            count += 1
     confidence = confidence / count
+
     try:
         print(json.dumps(field_values, indent=4))
+        print(confidence)
         return field_values
     except Exception as e:
         print(f"Error processing output: {e}")
@@ -158,8 +159,12 @@ def validate_date_range(from_date_str, to_date_str):
         print(f"[Date Validation Error] {e}")
         return False
 
+def connect():
+    print("You are connected to extractor_caller.py")
 
 def main():
     handle_data(gcs_bucket, input_prefix)
 
-main()
+
+if __name__ == '__main__':
+    main()
