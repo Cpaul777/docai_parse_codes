@@ -21,6 +21,7 @@ field_values = {
     "payor_name": "",
     "payor_registered_address": "",
     "zip_code_8A": "",
+    "confidence_average" : "0.0",
 }
 
 gcs_bucket = "practice_sample_training"
@@ -61,7 +62,7 @@ def handle_data(bucket, input_prefix, extracted_data:dict):
             except ValueError as e:
                 print(f"Error normalizing field '{key}': {e}")
                 field_values[key] = ""
-        if "_confidence" in data:
+        if "_confidence" in key:
             confidence += float(data.get(key, 0))
             count += 1
     try:
@@ -73,7 +74,8 @@ def handle_data(bucket, input_prefix, extracted_data:dict):
     if count != 0:
         print("it entered here right?")
         confidence /= count
-
+    
+    field_values["confidence_average"] = str(confidence)
     try:
         print(confidence)
         return field_values
