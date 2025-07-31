@@ -8,8 +8,8 @@ steps:
           --gen2 \
           --entry-point trigger \
           --runtime python311 \
-          --trigger-event google.cloud.storage.object.v1.finalized \
-          --trigger-resource run-sources-medtax-ocr-prototype-us-central1 \
+          --trigger-event-filters=type=google.cloud.storage.object.v1.finalized \
+          --trigger-event-filters=bucket=run-sources-medtax-ocr-prototype-us-central1 \
           --region us-central1 \
           --project medtax-ocr-prototype
 

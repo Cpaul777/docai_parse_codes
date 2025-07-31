@@ -8,22 +8,8 @@ import re
 import json
 import time
 import os
+import handle_data
 
-
-# Project ID
-project_id = "medtax-ocr-prototype"
-
-# Processor ID as hexadecimal characters.
-# Not to be confused with the Processor Display Name.
-
-processor_id = "7e831835ff6703a" #This is the invoice parser id (default) 
-
-
-# Optional for specific version. Example: pretrained-ocr-v1.0-2020-09-23
-processor_version_id = "420979daa7968661" #For specific version of parser  
-
-# Processor location. For example: "us" or "eu".
-location = "us"
 
 def batch_process_documents(
     project_id: str,
@@ -66,15 +52,14 @@ def batch_process_documents(
 
     print("Connecting to the processor version...")
     if processor_version_id:
-         # The full resource name of the processor version, e.g.:
+        # The full resource name of the processor version, e.g.:
         # projects/{project_id}/locations/{location}/processors/{processor_id}/processorVersions/{processor_version_id}
         name = client.processor_version_path(
             project_id, location, processor_id, processor_version_id
         )
 
     else:
-        # The full resource name of the processor, e.g.:
-        # projects/{project_id}/locations/{location}/processors/{processor_id}
+        # Using default version of the processor
         name = client.processor_path(project_id, location, processor_id)
 
     print("Requesting...")
@@ -84,21 +69,18 @@ def batch_process_documents(
         document_output_config=output_config,
     )
 
-    # BatchProcess returns a Long Running Operation (LRO)
+    # Start the batch process
     print("Processing...")
     operation = client.batch_process_documents(request)
 
-    # Continually polls the operation until it is complete.
-    # This could take some time for larger files
-    # Format: projects/{project_id}/locations/{location}/operations/{operation_id}
+    # Starting the operation
     try:
         print(f"Waiting for operation {operation.operation.name} to complete...")
         operation.result(timeout=timeout)
+
     # Catch exception when operation doesn't finish before timeout
     except (RetryError, InternalServerError) as e:
         print(e.message)
-
-    # It seems that asynchronous is also possible, something about waiting and not waiting. Might be a key info later
     
     # After the operation is complete,
     # get output document information from operation metadata
@@ -123,6 +105,7 @@ def batch_process_documents(
             )
             continue
 
+        # Store the bucket name and prefix
         output_bucket, output_prefix = matches.groups()
 
         # Get List of Document Objects from the Output Bucket
@@ -156,52 +139,66 @@ def process_output(output_bucket, output_prefix):
             ignore_unknown_fields=True
         )
 
-        # Extract form fields (labeled data)
-        # Adjustable for values with low confidence to just get the mention text or normalizedText
-        # 
-
+        # Extract form fields (labeled data) to only get the Key Value Pairs
         extracted_data = {}
+        # Get all fields in the json
         for field in document.entities:
             confidence = round(field.confidence, 2)
             key = field.type.strip()
             if hasattr(field, 'normalized_value') and field.normalized_value:
-                value = field.normalized_value.text.strip()
+                if "_tin_no" in field.type:
+                    value = field.mention_text.strip()
+                else:
+                    value = field.normalized_value.text.strip()
             else: 
                 value = field.mention_text.strip()
 
             extracted_data[key] = value
+            # Included confidence, only average confidence are taken at final output
             extracted_data[f"{key}_confidence"] = confidence
 
+        # for now only form 2307 are normalized, validated and handle missing fields
+        if extracted_data["form_no"] == "2307":
+            final_data = handle_data.handle_data(
+                bucket=output_bucket,
+                input_prefix=blob.name,
+                extracted_data=extracted_data
+            )
+        else:
+            final_data = extracted_data
+
         # Save extracted key-value pairs back to GCS
-        output_blob_name = blob.name.replace(".json", "_extracted.json")
+        output_blob_name = blob.name.replace(".json", "_finalized.json")
         text_blob = bucket.blob(output_blob_name)
         text_blob.upload_from_string(
-            json.dumps(extracted_data, indent=2),
+            json.dumps(final_data, indent=2),
             content_type="application/json"
         )
+
         print(f"Extracted fields saved to: gs://{output_bucket}/{output_blob_name}")
 
+# Just debugging purposes
 def connect():
     print("You are connected to extractor_caller.py")
 
-def main():
+def main(mime_type, input):
 
-    # #Preprocess part
-    # input = preprocess.main()
+    project_id = "medtax-ocr-prototype"               # Project ID
 
+    # SOON TO ADD: CONDITION FOR WHICH PROCESSOR TO USE
+    # EITHER INVOICE PARSER OR CUSTOM EXTRACTOR FOR 2307
+    processor_id = "7e831835ff6703a"                  # This is the ID of Custom Extractor for Form 2307 
+    processor_version_id = "420979daa7968661"         # For a specific version of the parser  
+    location = "us"                                   # Processor location. For example: "us" or "eu".
+
+    gcs_output_uri = f"gs://processed_output_bucket/processed_path/"                  # Path to the output
+    gcs_input_uri = f"gs://run-sources-medtax-ocr-prototype-us-central1/{input}"    # Configure Input pathing.
+    input_mime_type = mime_type
+
+    # This is for whole folder process, Not necessary for now
+    gcs_input_prefix = f"gs://run-sources-medtax-ocr-prototype-us-central1/{input}"
+    
     print("Starting the process...")
-
-    # Path to the output
-    gcs_output_uri = "gs://practice_sample_training/docai/process_path/"
-
-    # Configure Input pathing.
-    gcs_input_uri = "gs://practice_sample_training/training_sample/form_2307_intern/2307 - BEA  SAMPLE (2).pdf"
-
-    input_mime_type ="application/pdf"
-
-    #This is for whole folder process 
-    gcs_input_prefix = "gs://practice_sample_training/form_2307_intern/"
-
     batch_process_documents(
         project_id=project_id,
         location=location,
@@ -210,9 +207,9 @@ def main():
         gcs_input_uri=gcs_input_uri,
         processor_version_id=processor_version_id,
         input_mime_type=input_mime_type,
-        gcs_input_prefix=gcs_input_prefix,
+        # gcs_input_prefix=gcs_input_prefix,
     )
 
 
 if __name__ == '__main__':
-    main()
+    main("application/pdf", "2307 - BEA  SAMPLE (2).pdf")
