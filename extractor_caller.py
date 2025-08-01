@@ -181,6 +181,17 @@ def process_output(output_bucket, output_prefix):
 def connect():
     print("You are connected to extractor_caller.py")
 
+def detect_mime_type(filename):
+    # Check what type of file it is
+    if filename.endswith(".pdf"):
+        return "application/pdf"
+    elif filename.endswith(".png"):
+        return "image/png"
+    elif filename.endswith(".jpg", ".jpeg"):
+        return "image/jpeg"
+    else:
+        return None
+
 def main(mime_type, input):
 
     project_id = "medtax-ocr-prototype"               # Project ID

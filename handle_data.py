@@ -62,20 +62,26 @@ def handle_data(bucket, input_prefix, extracted_data:dict):
             except ValueError as e:
                 print(f"Error normalizing field '{key}': {e}")
                 field_values[key] = ""
-        if "_confidence" in key:
-            confidence += float(data.get(key, 0))
-            count += 1
+    
+    # Validate the date range
     try:
         if not validate_date_range(field_values["from_date"], field_values["to_date"]):
             raise ValueError("Invalid date range: 'from_date' is more recent than 'to_date'.")
-    except ValueError as e: 
+    except ValueError as e:
         print("Caught an Error: ", e)
-
+    
+    # Get the confidence average
+    for key in data.keys():
+        if "_confidence" in key:
+            print("Did it enter here")
+            confidence += float(data.get(key, 0))
+            count += 1
     if count != 0:
         print("it entered here right?")
         confidence /= count
     
     field_values["confidence_average"] = str(confidence)
+    
     try:
         print(confidence)
         return field_values
@@ -95,10 +101,8 @@ def norm_zip_code(zip_code):
     zip_code = ''.join(filter(str.isdigit, zip_code))  # Remove non-numeric characters
     if len(zip_code) == 4:
         return zip_code
-    elif len(zip_code) == 5:
-        return zip_code[:4]  
     else:
-        raise ValueError(f"Error normalizing ZIP code: Invalid length ({len(zip_code)}) digits")
+        return (zip_code + " [INVALID]")
 
 def norm_tin(num):
     """
@@ -116,7 +120,7 @@ def norm_tin(num):
     elif len(num) > 9 and len(num) <= 13:
         num = f"{num[:3]}-{num[3:6]}-{num[6:9]}-{num[9:]}" # Format as XXX-XX-XXXX-XXX
     else:
-        raise ValueError(f"Error normalizing TIN: Invalid length ({len(num)}) digits")
+        num = f"{num[:3]}-{num[3:6]}-{num[6:9]}-{num[9:]} [INVALID]"
 
     return num
 
@@ -142,7 +146,7 @@ def norm_date(date_str):
     
     except Exception:
         print(f"Invalid date format: {date_str}")
-        return ""
+        return f"{date_str} [INVALID]"
 
 def validate_date_range(from_date_str, to_date_str):
     """
@@ -163,34 +167,33 @@ def validate_date_range(from_date_str, to_date_str):
         print(f"[Date Validation Error] {e}")
         return False
 
-def connect():
-    print("You are connected to extractor_caller.py")
-
 def main():
+    #               UNUSED
+    # for testing purposes
     # handle_data(gcs_bucket, input_prefix, field_values)
     return 0
 
-# Not yet done
-def upload(bucket_name, file_source, data):
-    """
-    This function uploads the handled data after validation and normalization to the specified GCS bucket.
+#                   UNUSED
+# def upload(bucket_name, file_source, data):
+#     """
+#     This function uploads the handled data after validation and normalization to the specified GCS bucket.
 
-    Args:
-        bucket (str): The GCS bucket where the output will be uploaded.
-        file_source (str): The path to the output file to be uploaded.
-        data (dict): The data to be uploaded.
-    """
+#     Args:
+#         bucket (str): The GCS bucket where the output will be uploaded.
+#         file_source (str): The path to the output file to be uploaded.
+#         data (dict): The data to be uploaded.
+#     """
 
-    storage_client = storage.Client()
-    bucket = storage_client.bucket(bucket_name)
-    blob = bucket.blob(file_source)
+#     storage_client = storage.Client()
+#     bucket = storage_client.bucket(bucket_name)
+#     blob = bucket.blob(file_source)
 
-    try:
-        # Convert data to JSON and write to file
-        blob.upload_from_filename(file_source)
-        print(f"File {file_source} uploaded to {bucket.name}.")
-    except Exception as e:
-        print(f"Error uploading file: {e}")
+#     try:
+#         # Convert data to JSON and write to file
+#         blob.upload_from_filename(file_source)
+#         print(f"File {file_source} uploaded to {bucket.name}.")
+#     except Exception as e:
+#         print(f"Error uploading file: {e}")
 
 
 if __name__ == '__main__':

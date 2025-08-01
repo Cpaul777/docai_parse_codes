@@ -23,13 +23,9 @@ def trigger(event: CloudEvent):
     bucket = data.get("bucket")
     name = data.get("name")
 
-    # Check what type of file it is
-    if name.endswith(".pdf"):
-        mime_type = "application/pdf"
-    elif name.endswith(".png"):
-        mime_type = "image/png"
-    elif name.endswith(".jpg") or name.endswith(".jpeg"):
-        mime_type = "image/jpeg"
+    mime_type = extractor_caller.detect_mime_type(name)
+    if mime_type == None:
+        raise ValueError("Invalid file type")
     
     try:
         extractor_caller.main(
@@ -37,5 +33,4 @@ def trigger(event: CloudEvent):
             input=name)
     except ValueError:
         print("Error in extractor_caller.main, check the input file type or content.")
-    return f"File uploaded: {name} in bucket {bucket}"
-    
+    return f"Process Complete"
