@@ -4,7 +4,7 @@ from typing import Any
 import json
 
 import extractor_caller
-import handle_data
+import handle_data_2307
 import preprocess
 
 @functions_framework.cloud_event
@@ -28,6 +28,12 @@ def trigger(event: CloudEvent):
         raise ValueError("Invalid file type")
     
     try:
+        """
+        IF INVIOCE:
+            CALL INVOICE EXTRACTOR
+        ELIF EXPENSE:
+            CALL EXPENSE EXTRACTOR
+        """
         extractor_caller.main(
             mime_type=mime_type,
             input=name)

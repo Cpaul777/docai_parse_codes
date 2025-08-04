@@ -8,8 +8,7 @@ import re
 import json
 import time
 import os
-import handle_data
-
+import handle_data_2307
 
 def batch_process_documents(
     project_id: str,
@@ -159,9 +158,7 @@ def process_output(output_bucket, output_prefix):
 
         # for now only form 2307 are normalized, validated and handle missing fields
         if extracted_data["form_no"] == "2307":
-            final_data = handle_data.handle_data(
-                bucket=output_bucket,
-                input_prefix=blob.name,
+            final_data = handle_data_2307.handle_data(
                 extracted_data=extracted_data
             )
         else:
@@ -193,19 +190,37 @@ def detect_mime_type(filename):
         return None
 
 def main(mime_type, input):
-
-    project_id = "medtax-ocr-prototype"               # Project ID
-
+    
     # SOON TO ADD: CONDITION FOR WHICH PROCESSOR TO USE
     # EITHER INVOICE PARSER OR CUSTOM EXTRACTOR FOR 2307
-    processor_id = "7e831835ff6703a"                  # This is the ID of Custom Extractor for Form 2307 
-    processor_version_id = "420979daa7968661"         # For a specific version of the parser  
-    location = "us"                                   # Processor location. For example: "us" or "eu".
+    
+    # Project ID
+    project_id = "medtax-ocr-prototype"               
 
-    gcs_output_uri = f"gs://processed_output_bucket/processed_path/"                  # Path to the output
-    gcs_input_uri = f"gs://run-sources-medtax-ocr-prototype-us-central1/{input}"    # Configure Input pathing.
+     # This is the ID of Custom Extractor for Form 2307 
+    processor_id = "7e831835ff6703a"                 
+    
+    # For a specific version of the parser  
+    processor_version_id = "420979daa7968661"         
+
+    # Processor location. For example: "us" or "eu".
+    location = "us"        
+
+    # Path to the output
+    gcs_output_uri = f"gs://processed_output_bucket/processed_path/"
+    
+    # Configure Input pathing.
+    gcs_input_uri = f"gs://run-sources-medtax-ocr-prototype-us-central1/{input}"    
+    
+    # Set the input mime type
     input_mime_type = mime_type
-
+   
+    """
+    # For testing purposes
+    gcs_output_uri = f"gs://practice_sample_training/docai/"                  
+    gcs_input_uri = f"gs://practice_sample_training/training_sample/form_2307_intern/DUMMY 1 - 2307 - ROBERT.pdf"
+    input_mime_type = "application/pdf"
+    """
     # This is for whole folder process, Not necessary for now
     gcs_input_prefix = f"gs://run-sources-medtax-ocr-prototype-us-central1/{input}"
     
