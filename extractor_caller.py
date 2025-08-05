@@ -138,6 +138,7 @@ def process_output(output_bucket, output_prefix):
             ignore_unknown_fields=True
         )
 
+        """
         # Extract form fields (labeled data) to only get the Key Value Pairs
         extracted_data = {}
         # Get all fields in the json
@@ -155,14 +156,9 @@ def process_output(output_bucket, output_prefix):
             extracted_data[key] = value
             # Included confidence, only average confidence are taken at final output
             extracted_data[f"{key}_confidence"] = confidence
-
-        # for now only form 2307 are normalized, validated and handle missing fields
-        if extracted_data["form_no"] == "2307":
-            final_data = handle_data_2307.handle_data(
-                extracted_data=extracted_data
-            )
-        else:
-            final_data = extracted_data
+        """
+        # Extracted data is now handled by handle_data_2307.handle_data
+        final_data = handle_data_2307.handle_data(document)
 
         # Save extracted key-value pairs back to GCS
         output_blob_name = blob.name.replace(".json", "_finalized.json")
@@ -193,6 +189,7 @@ def main(mime_type, input):
     
     # SOON TO ADD: CONDITION FOR WHICH PROCESSOR TO USE
     # EITHER INVOICE PARSER OR CUSTOM EXTRACTOR FOR 2307
+    # OR MAYBE JUST SEPARATE PYTHON FILES
     
     # Project ID
     project_id = "medtax-ocr-prototype"               
@@ -201,11 +198,11 @@ def main(mime_type, input):
     processor_id = "7e831835ff6703a"                 
     
     # For a specific version of the parser  
-    processor_version_id = "420979daa7968661"         
+    processor_version_id = "6d9f64e0bc83f261"         
 
     # Processor location. For example: "us" or "eu".
     location = "us"        
-
+    
     # Path to the output
     gcs_output_uri = f"gs://processed_output_bucket/processed_path/"
     
@@ -218,7 +215,7 @@ def main(mime_type, input):
     """
     # For testing purposes
     gcs_output_uri = f"gs://practice_sample_training/docai/"                  
-    gcs_input_uri = f"gs://practice_sample_training/training_sample/form_2307_intern/DUMMY 1 - 2307 - ROBERT.pdf"
+    gcs_input_uri = f"gs://practice_sample_training/training_sample/form_2307_intern3/PAU - 2307 - 5.pdf"
     input_mime_type = "application/pdf"
     """
     # This is for whole folder process, Not necessary for now
