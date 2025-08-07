@@ -180,7 +180,7 @@ def detect_mime_type(filename):
         return "application/pdf"
     elif filename.endswith(".png"):
         return "image/png"
-    elif filename.endswith(".jpg", ".jpeg"):
+    elif filename.endswith((".jpg", ".jpeg")):
         return "image/jpeg"
     else:
         return None
