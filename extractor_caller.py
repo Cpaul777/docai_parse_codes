@@ -43,7 +43,10 @@ def batch_process_documents(
 
     # Cloud Storage URI for the Output Directory
     gcs_output_config = documentai.DocumentOutputConfig.GcsOutputConfig(
-        gcs_uri=gcs_output_uri, field_mask=field_mask
+        gcs_uri=gcs_output_uri, field_mask=field_mask,  
+        sharding_config=documentai.DocumentOutputConfig.GcsOutputConfig.ShardingConfig(
+            pages_per_shard=1
+        )
     )
 
     # Where to write results
@@ -118,62 +121,63 @@ def batch_process_documents(
                     f"Skipping non-supported file: {blob.name} - Mimetype: {blob.content_type}"
                 )
                 continue
+            process_output(blob, output_bucket, output_prefix)
 
-            process_output(output_bucket, output_prefix)
-
-def process_output(output_bucket, output_prefix):
+def process_output(blob, output_bucket, output_prefix):
     storage_client = storage.Client(output_bucket)
-    docai = documentai.DocumentProcessorServiceClient()
     bucket = storage_client.bucket(output_bucket)
 
-    # List all output JSON files
-    blobs = list(storage_client.list_blobs(output_bucket, prefix=output_prefix))
-    for blob in blobs:
-        if not blob.name.endswith(".json"):
-            continue  # Skip non-JSON files
+    if blob.name.endswith("_finalized.json"):
+        return
 
-        print(f"Fetching {blob.name}")
-        document = documentai.Document.from_json(
-            blob.download_as_bytes(),
-            ignore_unknown_fields=True
-        )
+    print(f"Fetching {blob.name}")
+    document = documentai.Document.from_json(
+        blob.download_as_bytes(),
+        ignore_unknown_fields=True
+    )
 
-        """
-        # Extract form fields (labeled data) to only get the Key Value Pairs
-        extracted_data = {}
-        # Get all fields in the json
-        for field in document.entities:
-            confidence = round(field.confidence, 2)
-            key = field.type.strip()
-            if hasattr(field, 'normalized_value') and field.normalized_value:
-                if "_tin_no" in field.type:
-                    value = field.mention_text.strip()
-                else:
-                    value = field.normalized_value.text.strip()
-            else: 
+    print("Document pages:", len(document.pages))
+    for page in document.pages:
+        print(f"Page {page.page_number}")
+        
+
+    """
+    # Extract form fields (labeled data) to only get the Key Value Pairs
+    extracted_data = {}
+    # Get all fields in the json
+    for field in document.entities:
+        confidence = round(field.confidence, 2)
+        key = field.type.strip()
+        if hasattr(field, 'normalized_value') and field.normalized_value:
+            if "_tin_no" in field.type:
                 value = field.mention_text.strip()
+            else:
+                value = field.normalized_value.text.strip()
+        else: 
+            value = field.mention_text.strip()
 
-            extracted_data[key] = value
-            # Included confidence, only average confidence are taken at final output
-            extracted_data[f"{key}_confidence"] = confidence
-        """
-        # Extracted data is now handled by handle_data_2307.handle_data
-        final_data = handle_data_2307.handle_data(document)
+        extracted_data[key] = value
+        # Included confidence, only average confidence are taken at final output
+        extracted_data[f"{key}_confidence"] = confidence
+    """
+    # Extracted data is now handled by handle_data_2307.handle_data
+    final_data = handle_data_2307.handle_data(document)
 
-        # Save extracted key-value pairs back to GCS
-        output_blob_name = blob.name.replace(".json", "_finalized.json")
-        text_blob = bucket.blob(output_blob_name)
-        text_blob.upload_from_string(
-            json.dumps(final_data, indent=2),
-            content_type="application/json"
-        )
+    # Save extracted key-value pairs back to GCS
+    output_blob_name = blob.name.replace(".json", "_finalized.json")
+    text_blob = bucket.blob(output_blob_name)
+    text_blob.upload_from_string(
+        json.dumps(final_data, indent=2),
+        content_type="application/json"
+    )
 
-        print(f"Extracted fields saved to: gs://{output_bucket}/{output_blob_name}")
+    print(f"Extracted fields saved to: gs://{output_bucket}/{output_blob_name}")
 
 # Just debugging purposes
 def connect():
     print("You are connected to extractor_caller.py")
 
+# Detect the file type
 def detect_mime_type(filename):
     # Check what type of file it is
     if filename.endswith(".pdf"):
@@ -198,7 +202,7 @@ def main(mime_type, input):
     processor_id = "7e831835ff6703a"                 
     
     # For a specific version of the parser  
-    processor_version_id = "6d9f64e0bc83f261"         
+    # processor_version_id = "6d9f64e0bc83f261"         
 
     # Processor location. For example: "us" or "eu".
     location = "us"        
@@ -213,10 +217,10 @@ def main(mime_type, input):
     input_mime_type = mime_type
    
     """
-    # For testing purposes
-    gcs_output_uri = f"gs://practice_sample_training/docai/"                  
-    gcs_input_uri = f"gs://practice_sample_training/training_sample/form_2307_intern3/PAU - 2307 - 5.pdf"
-    input_mime_type = "application/pdf"
+        # For testing purposes
+        gcs_output_uri = f"gs://practice_sample_training/docai/"                  
+        gcs_input_uri = f"gs://run-sources-medtax-ocr-prototype-us-central1/4 form 2307 pictures.pdf"
+        input_mime_type = "application/pdf"
     """
     # This is for whole folder process, Not necessary for now
     gcs_input_prefix = f"gs://run-sources-medtax-ocr-prototype-us-central1/{input}"
@@ -228,7 +232,7 @@ def main(mime_type, input):
         processor_id=processor_id,
         gcs_output_uri=gcs_output_uri,
         gcs_input_uri=gcs_input_uri,
-        processor_version_id=processor_version_id,
+        # processor_version_id=processor_version_id,
         input_mime_type=input_mime_type,
         # gcs_input_prefix=gcs_input_prefix,
     )

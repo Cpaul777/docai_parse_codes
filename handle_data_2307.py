@@ -4,6 +4,8 @@ from dateutil import parser
 from google.cloud import documentai
 import json
 
+# CAPTURE ENYE CHARACTER ñ LATER
+
 # below is only used in __app__==__main__
 gcs_bucket = "practice_sample_training"
 input_prefix = "docai/14582948428165940265/0/DUMMY 3 - 2307 - ROBERT-0.json"

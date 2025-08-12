@@ -16,6 +16,7 @@ def trigger(event: CloudEvent):
         except Exception as e:
             raise ValueError(f"Failed to decode event data: {e}")
     elif isinstance(event.data, dict):
+        print(type(event.data))
         data = event.data
     else:
         raise TypeError(f"Unsupported event data type: {type(event.data)}")
@@ -38,5 +39,5 @@ def trigger(event: CloudEvent):
             mime_type=mime_type,
             input=name)
     except ValueError:
-        print("Error in extractor_caller.main, check the input file type or content.")
-    return f"Process Complete"
+        print("Error in extractor_caller.main, invalid input file type or content.")
+    print("Process Complete")
