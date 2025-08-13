@@ -52,8 +52,8 @@ def handle_data(document):
     extracted_data = {}
 
     # Get all fields in the json
-    # Adjustable for performance when looping through entities
     for field in document.entities:
+
         # Taking table rows
         if field.type == "details_monthly_income_payment_taxes":
             row_dict = {field_name: "" for field_name in table_values}
@@ -70,6 +70,8 @@ def handle_data(document):
         key = field.type.strip()
 
         # Taking field values
+        # normalized_value in the raw json are google AI suggested texts
+        # Not safe for tin numbers and date
         if hasattr(field, 'normalized_value') and field.normalized_value:
             if "_tin_no" in field.type or "_date" in field.type:
                 value = field.mention_text.strip()
@@ -79,18 +81,19 @@ def handle_data(document):
             value = field.mention_text.strip()
         extracted_data[key] = value
 
-        # Included confidence, only average confidence are taken at final output
+        # Included confidence, only average confidence are taken of the final output
         extracted_data[f"{key}_confidence"] = confidence
 
-    print(json.dumps(table_rows, indent=2))
-    
-    # UNUSED | TESTING PURPOSES
-    # test_data = blob.download_as_string()
+    # Printed in the logs, for debugging purposes
+    # print(json.dumps(table_rows, indent=2))
 
     data = extracted_data
     count = 0
     confidence = 0
     
+    # Normalizing and validating the extracted data
+    # Left as blank if missing 
+    # Invalid values are concatenated with [INVALID]
     for key in field_values.keys():
         if key in data:
             value = data.get(key)
@@ -116,17 +119,19 @@ def handle_data(document):
         else:
             field_values[key] = ""
 
-    print(json.dumps(field_values, indent=2))
+    # For debugging purposes, printed at logs
+    # print(json.dumps(field_values, indent=2))
 
     # Validate the date range
-    try:
-        if not validate_date_range(field_values["from_date"], field_values["to_date"]):
-            raise ValueError("Validatiing date Failed")
-        
-    except ValueError as e:
-        print("Caught an Error: ", e)
+    if field_values["from_date"] and field_values["to_date"]:
+        try:
+            if not validate_date_range(field_values["from_date"], field_values["to_date"]):
+                raise ValueError("Validatiing date Failed")
+        except ValueError as e:
+            # Printing errors at logs
+            print("Caught an Error: ", e)
     
-    # Get the confidence average (This is only for field values)
+    # Get the confidence average (Currently only for field values not tables)
     for key in data.keys():
         if "_confidence" in key:
             confidence += float(data.get(key, 0))
@@ -136,6 +141,7 @@ def handle_data(document):
 
     field_values["confidence_average"] = str(round(confidence, 2))
     try:
+        # Adding table_row key to the field_values and its value is the table rows
         return {**field_values, "table_rows": table_rows}
     except Exception as e:
         print(f"Error processing output: {e}")
@@ -161,6 +167,9 @@ def norm_tin(num):
     """
     Normalize TIN (Tax Identification Number) strings to a standard format.
     
+    What counts as valid: 
+        9 digits, and 12 digits
+
     Args:
         num (str): The TIN string to normalize.
     
@@ -186,11 +195,13 @@ def norm_date(date_str):
         date_str (str): The date string to normalize.
     
     Returns:
-        str: The normalized date string in 'YYYY-MM-DD' format.
+        str: The normalized date string in 'MM-DD-YYYY' format.
     """
+
     date_format = "%m-%d-%Y"  # MM-DD-YYYY
     date = "".join(filter(str.isdigit, date_str))  # Remove non-numeric characters
 
+    # Handles 3-1-2025, 03-1-2025, 03-01-2025, 312025  
     if(len(date) < 6 or  len(date) > 8):
         return f"{date} [INVALID]"
     year = date[-4:]
@@ -244,29 +255,6 @@ def main():
     # for testing purposes
     handle_data(document=None)
     return 0
-
-#                   UNUSED MIGHT USE LATER FOR TESTING PURPOSES
-# def upload(bucket_name, file_source, data):
-#     """
-#     This function uploads the handled data after validation and normalization to the specified GCS bucket.
-
-#     Args:
-#         bucket (str): The GCS bucket where the output will be uploaded.
-#         file_source (str): The path to the output file to be uploaded.
-#         data (dict): The data to be uploaded.
-#     """
-
-#     storage_client = storage.Client()
-#     bucket = storage_client.bucket(bucket_name)
-#     blob = bucket.blob(file_source)
-
-#     try:
-#         # Convert data to JSON and write to file
-#         blob.upload_from_filename(file_source)
-#         print(f"File {file_source} uploaded to {bucket.name}.")
-#     except Exception as e:
-#         print(f"Error uploading file: {e}")
-
 
 if __name__ == '__main__':
     main()

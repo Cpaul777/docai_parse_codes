@@ -121,9 +121,10 @@ def batch_process_documents(
                     f"Skipping non-supported file: {blob.name} - Mimetype: {blob.content_type}"
                 )
                 continue
-            process_output(blob, output_bucket, output_prefix)
+            process_output(blob, output_bucket)
 
-def process_output(blob, output_bucket, output_prefix):
+# Process the output 
+def process_output(blob, output_bucket):
     storage_client = storage.Client(output_bucket)
     bucket = storage_client.bucket(output_bucket)
 
@@ -136,30 +137,6 @@ def process_output(blob, output_bucket, output_prefix):
         ignore_unknown_fields=True
     )
 
-    print("Document pages:", len(document.pages))
-    for page in document.pages:
-        print(f"Page {page.page_number}")
-        
-
-    """
-    # Extract form fields (labeled data) to only get the Key Value Pairs
-    extracted_data = {}
-    # Get all fields in the json
-    for field in document.entities:
-        confidence = round(field.confidence, 2)
-        key = field.type.strip()
-        if hasattr(field, 'normalized_value') and field.normalized_value:
-            if "_tin_no" in field.type:
-                value = field.mention_text.strip()
-            else:
-                value = field.normalized_value.text.strip()
-        else: 
-            value = field.mention_text.strip()
-
-        extracted_data[key] = value
-        # Included confidence, only average confidence are taken at final output
-        extracted_data[f"{key}_confidence"] = confidence
-    """
     # Extracted data is now handled by handle_data_2307.handle_data
     final_data = handle_data_2307.handle_data(document)
 
@@ -172,10 +149,6 @@ def process_output(blob, output_bucket, output_prefix):
     )
 
     print(f"Extracted fields saved to: gs://{output_bucket}/{output_blob_name}")
-
-# Just debugging purposes
-def connect():
-    print("You are connected to extractor_caller.py")
 
 # Detect the file type
 def detect_mime_type(filename):
@@ -199,10 +172,11 @@ def main(mime_type, input):
     project_id = "medtax-ocr-prototype"               
 
      # This is the ID of Custom Extractor for Form 2307 
-    processor_id = "7e831835ff6703a"                 
+    processor_id = "c1792eca909556ee"                 
     
-    # For a specific version of the parser  
-    # processor_version_id = "6d9f64e0bc83f261"         
+    # For a specific version of the parser
+    # If not included in the argument, the default version will be used
+    processor_version_id = "6d9f64e0bc83f261"         
 
     # Processor location. For example: "us" or "eu".
     location = "us"        
@@ -217,7 +191,9 @@ def main(mime_type, input):
     input_mime_type = mime_type
    
     """
-        # For testing purposes
+        # For testing purposes without going through the whole trigger-function
+        # hardcoded getting the document and processing it 
+
         gcs_output_uri = f"gs://practice_sample_training/docai/"                  
         gcs_input_uri = f"gs://run-sources-medtax-ocr-prototype-us-central1/4 form 2307 pictures.pdf"
         input_mime_type = "application/pdf"

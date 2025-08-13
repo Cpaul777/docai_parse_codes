@@ -1,17 +1,44 @@
+# By default the service account by these functions will be the cloudfunction
+# default service account agent
+
+substituions:
+  _REGION: us-central1
+  _PROJECT: medtax-ocr-prototype
+
+  # below are the webhook url and secret for security
+  _WEBHOOK_URL: http://localhost:3000/api/webhook
+  _WEBHOOK_SECRET: WHATEVER THIS IS
+
 steps:
+  # Deploy first function
   - name: 'gcr.io/cloud-builders/gcloud'
-    entrypoint: bash
     args:
-      - -c
-      - |
-        gcloud functions deploy documents-parser-function \
-          --gen2 \
-          --entry-point trigger \
-          --runtime python311 \
-          --trigger-event-filters="type=google.cloud.storage.object.v1.finalized" \
-          --trigger-event-filters="bucket=run-sources-medtax-ocr-prototype-us-central1" \
-          --region us-central1 \
-          --project medtax-ocr-prototype
+      [
+        "functions", "deploy", "documents-parser-function",
+        "--gen2",
+        "--entry-point", "trigger",
+        "--runtime", "python311",
+        "--trigger-event-filters", "type=google.cloud.storage.object.v1.finalized",
+        "--trigger-event-filters", "bucket=run-sources-medtax-ocr-prototype-us-central1",
+        "--region", "${_REGION}",
+        "--project", "${_PROJECT}"
+      ]
+
+  # Deploy second function
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      [
+        "functions", "deploy", "send-front-end",
+        "--gen2",
+        "--entry-point", "sendTrigger",
+        "--runtime", "python311",
+        "--source", "return",
+        "--trigger-event-filters", "type=google.cloud.storage.object.v1.finalized",
+        "--trigger-event-filters", "bucket=processed_output_bucket",
+        "--region", "${_REGION}",
+        "--project", "${_PROJECT}",
+        "--set-env-vars", "WEBHOOK_URL=${_WEBHOOK_URL},WEBHOOK_SECRET=${_WEBHOOK_SECRET}"
+      ]
 
 options:
   logging: CLOUD_LOGGING_ONLY

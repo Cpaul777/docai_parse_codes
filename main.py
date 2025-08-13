@@ -4,8 +4,6 @@ from typing import Any
 import json
 
 import extractor_caller
-import handle_data_2307
-import preprocess
 
 @functions_framework.cloud_event
 def trigger(event: CloudEvent):
@@ -23,7 +21,9 @@ def trigger(event: CloudEvent):
 
     bucket = data.get("bucket")
     name = data.get("name")
-
+    print(f"Received from bucket: {bucket}, file: {name}")
+    
+    # Store the document type (img, pdf)
     mime_type = extractor_caller.detect_mime_type(name)
     if mime_type == None:
         raise ValueError("Invalid file type")
