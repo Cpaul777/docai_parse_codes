@@ -84,4 +84,7 @@ Update `WEBHOOK_URL` to the production link.
 Replace `WEBHOOK_SECRET` with a secure, random string.
 
 
-
+## Documentation links
+- [Setup Document AI](https://cloud.google.com/document-ai/docs/setup)
+- [Send Process Request Sample Code Used](https://cloud.google.com/document-ai/docs/send-request#batch-process)
+- 
