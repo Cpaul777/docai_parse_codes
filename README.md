@@ -1,70 +1,78 @@
-# docai_parse_codes
-These codes are for a project that uses Document AI API etc. from GCP 
 
-HOW TO TEST LOCALLY
+#  docai_parse_codes
 
-  You don't need to do this if you're using Cloud Shell.
-  
-  SETUP Google Cloud
-  Install Google Cloud SDK:
-  
-  https://dl.google.com/dl/cloudsdk/channels/rapid/GoogleCloudSDKInstaller.exe
+> Utility scripts for integrating with **Google Cloud Document AI API** and processing document data.  
+> Built for `medtax-ocr-prototype` on GCP.
 
-  In your project folder run the commands on your shell/terminal:
-  
-        `gcloud init`
-  
-  Authenticate with your google account
+---
 
-      `gcloud auth application-default login`
-      
-  This will open a browser window, sign in with the google account that
-  has access to the project.
+##  Features
+- Extracts document data from PDFs/images using **Document AI**.
+- Processes and finalizes structured JSON output.
+- Supports local testing or running in **Google Cloud Shell**.
+- Includes a webhook sender to push results to a front-end application.
 
-  Setup the project
+---
 
-  `gcloud config set project medtax-ocr-prototype`
+##  How to Test Locally
 
-  Install Dependencies
-    Run this command inside the root of your project:
+> **Note:** If you are using **Google Cloud Shell**, you can skip this section.
 
-    `pip install -r requirements.txt `
+### 1️⃣ Setup Google Cloud
+- Install **Google Cloud SDK**:  
+  [Download GoogleCloudSDKInstaller.exe](https://dl.google.com/dl/cloudsdk/channels/rapid/GoogleCloudSDKInstaller.exe)
+- In your project folder, run:
+```bash
+gcloud init
+gcloud auth application-default login
+```
 
+This opens a browser — sign in with the Google account that has project access.
+  Set the project:
+```bash
+    gcloud config set project medtax-ocr-prototype
+```
 
-Testing the functions 
-  to test extracting using document AI with a specific processor and finalizing the output, you can uncomment the:
-  
-        gcs_output_uri = f"gs://practice_sample_training/docai/"                  
-        gcs_input_uri = f"gs://run-sources-medtax-ocr-prototype-us-central1/4 form 2307 pictures.pdf"
-        input_mime_type = "application/pdf"
-  
-  part from the def main() function of extractor_caller.py file, just specificy the document you want to use in the gcs_input_uri and 
-  location where the output will go in gcs_output_uri. 
-  (Sample Documents are located in practice_sample_training bucket)
+Install Dependencies:
+```bash
+  pip install -r requirements.txt
+```
 
-  after doing so, you can uncomment the print lines that are for testing/debugging purposes in the handle_data.py
-  so the result gets printed in the terminal or just check the output file in the bucket and file path you specified,
-  files taht ends with "_finalized.json" are the extracted final values
+Testing Extraction
+In extractor_caller.py, uncomment and update:
+```python
+  gcs_output_uri = "gs://practice_sample_training/docai/"
+  gcs_input_uri = "gs://run-sources-medtax-ocr-prototype-us-central1/4 form 2307 pictures.pdf"
+  input_mime_type = "application/pdf"
+```
 
-# return
+gcs_input_uri: path to the document you want to process.
+gcs_output_uri: path where processed files will be saved.
 
-HOW TO TEST POST WITH WEBHOOK 
+To see the results:
+  Uncomment print lines in handle_data.py to see results in your terminal.
+  Or check the output file in your GCS bucket — files ending with _finalized.json contain extracted values.
 
-  Open the send_back.py and modify the blob variable and bucket variable under if __name__ == '__main__': to whatever finalized process 
-  file you want to send to the front-end.
+# How to Test POST with Webhook
+Open send_back.py and update:
 
-  Make sure your front-end next.js is running the server with the port localhost:3000 and you are on the page 
-  http://localhost:3000/form2307
+```python
+  bucket = bucket = storage_client.bucket("processed_output_bucket")
+  blob = bucket.blob("processed_path/16746721153392958237/0/DUMMY 2 - 2307 - ROBERT-0_finalized.json")
+```
+To the bucket and finalized file of your choice.
+And then run the python file 
 
-  Then you can run the file: send_back.py
+```python
+  python3 send_back.py
+```
 
-IN PRODUCTION
-  Once the website has been launched/hosted on the internet, if webhook will be the method for sending to front-end, 
-  WEBHOOK_URL should be changed to the proper link and WEBHOOK_SECRET should be replaced with randomized string
+# In Production
+When hosting the site:
 
+Update `WEBHOOK_URL` to the production link.
 
-# Notes
+Replace `WEBHOOK_SECRET` with a secure, random string.
 
-Requires GCP credentials with Document AI and Cloud Storage access
 
 
