@@ -16,7 +16,7 @@
 
 ##  How to Test Locally
 
-> **Note:** If you are using **Google Cloud Shell**, you can skip this section.
+> **Note:** If you are using **Google Cloud Shell**, you can skip the setup section.
 
 ### Setup Google Cloud
 - Install **Google Cloud SDK**:  
@@ -39,7 +39,7 @@ Install Dependencies:
   pip install -r requirements.txt
 ```
 
-Testing Extraction
+## Testing Extraction
 In extractor_caller.py, uncomment and update:
 ```python
   gcs_output_uri = "gs://practice_sample_training/docai/"
