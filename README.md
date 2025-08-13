@@ -2,7 +2,9 @@
 These codes are for a project that uses Document AI API etc. from GCP 
 
 
-How TO TEST LOCALLY
+
+HOW TO TEST LOCALLY
+
   to test extracting using document AI with a specific processor and finalizing the output, you can uncomment the:
   
         gcs_output_uri = f"gs://practice_sample_training/docai/"                  
