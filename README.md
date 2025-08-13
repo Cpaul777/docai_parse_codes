@@ -43,9 +43,9 @@ pip install -r requirements.txt
 ## Testing Extraction
 In `extractor_caller.py`, uncomment and update:
 ```python
-  gcs_output_uri = "gs://practice_sample_training/docai/"
-  gcs_input_uri = "gs://run-sources-medtax-ocr-prototype-us-central1/4 form 2307 pictures.pdf"
-  input_mime_type = "application/pdf"
+gcs_output_uri = "gs://practice_sample_training/docai/"
+gcs_input_uri = "gs://run-sources-medtax-ocr-prototype-us-central1/4 form 2307 pictures.pdf"
+input_mime_type = "application/pdf"
 ```
 
 **gcs_input_uri:** path to the document you want to process.
@@ -59,22 +59,22 @@ To see the results:
 ## How to Test POST with Webhook
 Create a `.env` file and create a WEBHOOK_URL and WEBHOOK_SECRET like this:
 ```env
-  WEBHOOK_SECRET = "WHATEVER THIS IS"
-  WEBHOOK_URL = "http://localhost:3000/api/webhook"
+WEBHOOK_SECRET = "WHATEVER THIS IS"
+WEBHOOK_URL = "http://localhost:3000/api/webhook"
 ```
 Just make sure it is the same WEBHOOK_SECRET as the one used in front-end
 
 Open `send_back.py` and update:
 
 ```python
-  bucket = storage_client.bucket("processed_output_bucket")
-  blob = bucket.blob("processed_path/16746721153392958237/0/DUMMY 2 - 2307 - ROBERT-0_finalized.json")
+bucket = storage_client.bucket("processed_output_bucket")
+blob = bucket.blob("processed_path/16746721153392958237/0/DUMMY 2 - 2307 - ROBERT-0_finalized.json")
 ```
 To the bucket and finalized file of your choice.
 And then run the python file 
 
 ```python
-  python3 send_back.py
+python3 send_back.py
 ```
 
 ## In Production
