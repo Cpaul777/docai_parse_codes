@@ -67,7 +67,7 @@ Just make sure it is the same WEBHOOK_SECRET as the one used in front-end
 Open `send_back.py` and update:
 
 ```python
-  bucket = bucket = storage_client.bucket("processed_output_bucket")
+  bucket = storage_client.bucket("processed_output_bucket")
   blob = bucket.blob("processed_path/16746721153392958237/0/DUMMY 2 - 2307 - ROBERT-0_finalized.json")
 ```
 To the bucket and finalized file of your choice.
