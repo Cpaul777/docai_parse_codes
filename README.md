@@ -3,7 +3,7 @@
 
 > Utility scripts for integrating with **Google Cloud Document AI API** and processing document data.  
 > Built for `medtax-ocr-prototype` on GCP.
-
+> Let us know if we miss something to provide
 ---
 
 ##  Features
@@ -48,6 +48,7 @@ In extractor_caller.py, uncomment and update:
 ```
 
 gcs_input_uri: path to the document you want to process.
+
 gcs_output_uri: path where processed files will be saved.
 
 To see the results:
@@ -55,6 +56,13 @@ To see the results:
   Or check the output file in your GCS bucket — files ending with _finalized.json contain extracted values.
 
 ## How to Test POST with Webhook
+Create a .env file and create a WEBHOOK_URL and WEBHOOK_SECRET like this:
+```env
+  WEBHOOK_SECRET = "WHATEVER THIS IS"
+  WEBHOOK_URL = "http://localhost:3000/api/webhook"
+```
+Just make sure it is the same WEBHOOK_SECRET as the one used in front-end
+
 Open send_back.py and update:
 
 ```python
