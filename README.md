@@ -31,40 +31,40 @@ gcloud auth application-default login
 This opens a browser — sign in with the Google account that has project access.
   Set the project:
 ```bash
-    gcloud config set project medtax-ocr-prototype
+gcloud config set project medtax-ocr-prototype
 ```
 If a browser didn't open, copy the link and paste it on your browser
 
 Install Dependencies:
 ```bash
-  pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 ## Testing Extraction
-In extractor_caller.py, uncomment and update:
+In `extractor_caller.py`, uncomment and update:
 ```python
   gcs_output_uri = "gs://practice_sample_training/docai/"
   gcs_input_uri = "gs://run-sources-medtax-ocr-prototype-us-central1/4 form 2307 pictures.pdf"
   input_mime_type = "application/pdf"
 ```
 
-gcs_input_uri: path to the document you want to process.
+**gcs_input_uri:** path to the document you want to process.
 
-gcs_output_uri: path where processed files will be saved.
+**gcs_output_uri:** path where processed files will be saved.
 
 To see the results:
-  Uncomment print lines in handle_data.py to see results in your terminal.
-  Or check the output file in your GCS bucket — files ending with _finalized.json contain extracted values.
+  Uncomment print lines in `handle_data.py` to see results in your terminal.
+  Or check the output file in your GCS bucket — files ending with **_finalized.json** contain extracted values.
 
 ## How to Test POST with Webhook
-Create a .env file and create a WEBHOOK_URL and WEBHOOK_SECRET like this:
+Create a `.env` file and create a WEBHOOK_URL and WEBHOOK_SECRET like this:
 ```env
   WEBHOOK_SECRET = "WHATEVER THIS IS"
   WEBHOOK_URL = "http://localhost:3000/api/webhook"
 ```
 Just make sure it is the same WEBHOOK_SECRET as the one used in front-end
 
-Open send_back.py and update:
+Open `send_back.py` and update:
 
 ```python
   bucket = bucket = storage_client.bucket("processed_output_bucket")
