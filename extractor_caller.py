@@ -171,8 +171,8 @@ def main(mime_type, input):
     # Project ID
     project_id = "medtax-ocr-prototype"               
 
-     # This is the ID of Custom Extractor for Form 2307 
-    processor_id = "c1792eca909556ee"                 
+     # This is the ID of custom_processor_2307 processor
+    processor_id = "c1792eca909556ee"      
     
     # For a specific version of the parser
     # If not included in the argument, the default version will be used
