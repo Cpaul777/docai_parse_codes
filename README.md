@@ -18,7 +18,7 @@
 
 > **Note:** If you are using **Google Cloud Shell**, you can skip this section.
 
-### 1️⃣ Setup Google Cloud
+### Setup Google Cloud
 - Install **Google Cloud SDK**:  
   [Download GoogleCloudSDKInstaller.exe](https://dl.google.com/dl/cloudsdk/channels/rapid/GoogleCloudSDKInstaller.exe)
 - In your project folder, run:
@@ -32,6 +32,7 @@ This opens a browser — sign in with the Google account that has project access
 ```bash
     gcloud config set project medtax-ocr-prototype
 ```
+If a browser didn't open, copy the link and paste it on your browser
 
 Install Dependencies:
 ```bash
@@ -53,7 +54,7 @@ To see the results:
   Uncomment print lines in handle_data.py to see results in your terminal.
   Or check the output file in your GCS bucket — files ending with _finalized.json contain extracted values.
 
-# How to Test POST with Webhook
+## How to Test POST with Webhook
 Open send_back.py and update:
 
 ```python
@@ -67,7 +68,7 @@ And then run the python file
   python3 send_back.py
 ```
 
-# In Production
+## In Production
 When hosting the site:
 
 Update `WEBHOOK_URL` to the production link.
