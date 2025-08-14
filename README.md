@@ -79,8 +79,9 @@ python3 send_back.py
 
 ## In Production
 When hosting the site:
+Update the environment variables
 
-Update `WEBHOOK_URL` to the production link.
+Update `WEBHOOK_URL` to the actual link.
 
 Replace `WEBHOOK_SECRET` with a secure, random string.
 
