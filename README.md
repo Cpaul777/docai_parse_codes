@@ -78,8 +78,7 @@ python3 send_back.py
 ```
 
 ## In Production
-When hosting the site:
-Update the environment variables
+When hosting the site update the environment variables:
 
 Update `WEBHOOK_URL` to the actual link.
 
