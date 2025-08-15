@@ -56,7 +56,10 @@ To see the results:
   Uncomment print lines in `handle_data.py` to see results in your terminal.
   Or check the output file in your GCS bucket — files ending with **_finalized.json** contain extracted values.
 
+
 ## How to Test POST with Webhook
+> This is no longer supported method hence it wont work
+
 Create a `.env` file and create a WEBHOOK_URL and WEBHOOK_SECRET like this:
 ```env
 WEBHOOK_SECRET = "WHATEVER THIS IS"
