@@ -11,7 +11,7 @@ db = firestore.client(app, "extracted-data-db")
 def write_to_firestore(data, prefix: str, collection: Optional[str]):
     match = re.search(r'[^/]+$', prefix)
     docname = match.group(0) if match else prefix
-    
+
     if match:
         print(f"Document name extracted: {docname}")
     if collection is not None:
@@ -24,6 +24,6 @@ def write_to_firestore(data, prefix: str, collection: Optional[str]):
 
 if __name__ == '__main__':
     data = {"first": "Ada", "last": "Lovelace", "born": 1815}
-    user = "user"
+    user = "users"
     prefix = "alovelace"
     write_to_firestore(data, prefix, user)

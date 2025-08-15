@@ -33,8 +33,8 @@ def sendTrigger(event: CloudEvent):
     print(f"Fetching {blob.name}")
     document = blob.download_as_string()
 
-    response = send_back.send_result_to_frontend(document)
+    # response = send_back.send_result_to_frontend(document)
 
     firestore_write.write_to_firestore(document, name.split("_finalized.json")[0], userId)
 
-    print("Process Done", response)
+    print("Process Done", name)
