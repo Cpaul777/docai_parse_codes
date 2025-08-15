@@ -28,6 +28,7 @@ def sendTrigger(event: CloudEvent):
 
     metadata = event.get('metadata') or {}
     userId = metadata.get("userid")
+    print("userId: ", userId)
 
     print(f"Fetching {blob.name}")
     document = blob.download_as_string()

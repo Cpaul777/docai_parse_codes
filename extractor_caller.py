@@ -128,6 +128,7 @@ def batch_process_documents(
 def process_output(blob, output_bucket, userId):
     storage_client = storage.Client(output_bucket)
     bucket = storage_client.bucket(output_bucket)
+    print("userId: ",userId)
 
     if blob.name.endswith("_finalized.json"):
         return
@@ -146,6 +147,7 @@ def process_output(blob, output_bucket, userId):
     text_blob.metadata = {
         "userid" : userId
     }
+
     text_blob.upload_from_string(
         json.dumps(final_data, indent=2),
         content_type="application/json"

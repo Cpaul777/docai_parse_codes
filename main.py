@@ -26,6 +26,8 @@ def trigger(event: CloudEvent):
     metadata = event.get('metadata') or {}
     userId = metadata.get('userid')
 
+    print("userId: ", userId)
+
     # Store the document type (img, pdf)
     mime_type = extractor_caller.detect_mime_type(name)
     if mime_type == None:
