@@ -11,7 +11,7 @@
 - Extracts document data from PDFs/images using **Document AI**.
 - Processes and finalizes structured JSON output.
 - Supports local testing or running in **Google Cloud Shell**.
-- Includes a webhook sender to push results to a front-end application.
+- Includes a firestore writing process to store data.
 
 ---
 
