@@ -11,6 +11,7 @@ import os
 import handle_data_2307
 
 def batch_process_documents(
+    userId: str,
     project_id: str,
     location: str,
     processor_id: str,
@@ -121,10 +122,10 @@ def batch_process_documents(
                     f"Skipping non-supported file: {blob.name} - Mimetype: {blob.content_type}"
                 )
                 continue
-            process_output(blob, output_bucket)
+            process_output(blob, output_bucket, userId)
 
 # Process the output 
-def process_output(blob, output_bucket):
+def process_output(blob, output_bucket, userId):
     storage_client = storage.Client(output_bucket)
     bucket = storage_client.bucket(output_bucket)
 
@@ -136,13 +137,15 @@ def process_output(blob, output_bucket):
         blob.download_as_bytes(),
         ignore_unknown_fields=True
     )
-
     # Extracted data is now handled by handle_data_2307.handle_data
     final_data = handle_data_2307.handle_data(document)
 
     # Save extracted key-value pairs back to GCS
     output_blob_name = blob.name.replace(".json", "_finalized.json")
     text_blob = bucket.blob(output_blob_name)
+    text_blob.metadata = {
+        "userid" : userId
+    }
     text_blob.upload_from_string(
         json.dumps(final_data, indent=2),
         content_type="application/json"
@@ -162,7 +165,7 @@ def detect_mime_type(filename):
     else:
         return None
 
-def main(mime_type, input):
+def main(mime_type, input, userId):
     
     # SOON TO ADD: CONDITION FOR WHICH PROCESSOR TO USE
     # EITHER INVOICE PARSER OR CUSTOM EXTRACTOR FOR 2307
@@ -203,6 +206,7 @@ def main(mime_type, input):
     
     print("Starting the process...")
     batch_process_documents(
+        userId=userId,
         project_id=project_id,
         location=location,
         processor_id=processor_id,
@@ -215,4 +219,4 @@ def main(mime_type, input):
 
 
 if __name__ == '__main__':
-    main("application/pdf", "2307 - BEA  SAMPLE (2).pdf")
+    main("application/pdf", "2307 - BEA  SAMPLE (2).pdf", userId="sample")

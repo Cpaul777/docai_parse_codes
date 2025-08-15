@@ -23,6 +23,9 @@ def trigger(event: CloudEvent):
     name = data.get("name")
     print(f"Received from bucket: {bucket}, file: {name}")
     
+    metadata = event.get('metadata') or {}
+    userId = metadata.get('userid')
+
     # Store the document type (img, pdf)
     mime_type = extractor_caller.detect_mime_type(name)
     if mime_type == None:
@@ -37,7 +40,8 @@ def trigger(event: CloudEvent):
         """
         extractor_caller.main(
             mime_type=mime_type,
-            input=name)
+            input=name, 
+            userId=userId)
     except ValueError:
         print("Error in extractor_caller.main, invalid input file type or content.")
     print("Process Complete")
