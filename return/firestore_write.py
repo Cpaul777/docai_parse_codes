@@ -23,7 +23,7 @@ def write_to_firestore(data, prefix: str, collection: Optional[str]):
         doc_ref.set(data)
 
 if __name__ == '__main__':
-    data = {"first": "Ada", "last": "Lovelace", "born": 1815}
+    data = {"first": "Ada", "last": "Lovelace", "born": 1815, "Diedat": 1852}
     user = "users"
     prefix = "alovelace"
     write_to_firestore(data, prefix, user)

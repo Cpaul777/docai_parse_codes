@@ -1,15 +1,16 @@
 import functions_framework
-from google.cloud import storage
 from cloudevents.http import CloudEvent
+from google.cloud import storage
 import dir
 import firestore_write
 import send_back
+import re
 
 
 @functions_framework.cloud_event
 def sendTrigger(event: CloudEvent):
     data = event.data
-    bucket = data.get("bucket")
+    bucket_name = data.get("bucket")
     name = data.get("name")
 
     if name is None:
@@ -23,7 +24,7 @@ def sendTrigger(event: CloudEvent):
 
     # Initialize Storage clients to get the blob
     storage_client = storage.Client()
-    bucket = storage_client.bucket(bucket)
+    bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(name)
 
     metadata = event.get('metadata') or {}
@@ -35,6 +36,8 @@ def sendTrigger(event: CloudEvent):
 
     # response = send_back.send_result_to_frontend(document)
 
-    firestore_write.write_to_firestore(document, name.split("_finalized.json")[0], userId)
+    name = re.sub(r'.*/(.*)-\d_finalized(?=\.json$)', '', name)
+
+    firestore_write.write_to_firestore(document, name, userId)
 
     print("Process Done", name)
