@@ -5,9 +5,6 @@ substitutions:
   _REGION: us-central1
   _PROJECT: medtax-ocr-prototype
 
-  # below are the webhook url and secret for security
-  _WEBHOOK_URL: http://localhost:3000/api/webhook
-  _WEBHOOK_SECRET: WHATEVER THIS IS
 
 steps:
   # Deploy first function
@@ -36,8 +33,7 @@ steps:
         "--trigger-event-filters", "type=google.cloud.storage.object.v1.finalized",
         "--trigger-event-filters", "bucket=processed_output_bucket",
         "--region", "${_REGION}",
-        "--project", "${_PROJECT}",
-        "--set-env-vars", "WEBHOOK_URL=${_WEBHOOK_URL},WEBHOOK_SECRET=${_WEBHOOK_SECRET}"
+        "--project", "${_PROJECT}"
       ]
 
 options:
