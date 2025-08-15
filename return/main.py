@@ -3,7 +3,7 @@ from cloudevents.http import CloudEvent
 from google.cloud import storage
 import dir
 import firestore_write
-import send_back
+import json
 import re
 
 
@@ -32,11 +32,11 @@ def sendTrigger(event: CloudEvent):
     print("userId: ", userId)
 
     print(f"Fetching {blob.name}")
-    document = blob.download_as_string()
+    bytes = blob.download_as_bytes()
+    document = json.loads(bytes)
 
-    # response = send_back.send_result_to_frontend(document)
-
-    name = re.sub(r'.*/(.*)-\d_finalized(?=\.json$)', '', name)
+    name = re.sub(r'^.*/', '', name)
+    name = re.sub(r'-\d+_finalized\.json$', '', name)
 
     firestore_write.write_to_firestore(document, name, userId)
 
