@@ -27,7 +27,7 @@ def sendTrigger(event: CloudEvent):
     bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(name)
 
-    metadata = event.get('metadata') or {}
+    metadata = data.get('metadata') or {}
     userId = metadata.get("userid")
     print("userId: ", userId)
 

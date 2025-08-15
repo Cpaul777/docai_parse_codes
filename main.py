@@ -23,7 +23,7 @@ def trigger(event: CloudEvent):
     name = data.get("name")
     print(f"Received from bucket: {bucket}, file: {name}")
     
-    metadata = event.get('metadata') or {}
+    metadata = data.get('metadata') or {}
     userId = metadata.get('userid')
 
     print("userId: ", userId)
