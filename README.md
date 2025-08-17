@@ -18,6 +18,9 @@
 ##  How to Test Locally
 
 > **Note:** If you are using **Google Cloud Shell**, you can skip the setup section.
+> Use the following link to auto clone the repository to the **Google Cloud Shell**
+> [Cloud Shell Clone](https://ssh.cloud.google.com/cloudshell/editor?show=ide&cloudshell_workspace=.&cloudshell_open_in_editor=extractor_caller.py&cloudshell_git_repo=https://github.com/Cpaul777/docai_parse_codes.git)
+> **NOTE** Google Cloud Shell has a weekly quota and limits of 50 hours a week for usage.
 
 ### Setup Google Cloud
 - Install **Google Cloud SDK**:  
