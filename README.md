@@ -57,35 +57,7 @@ To see the results:
   Or check the output file in your GCS bucket — files ending with **_finalized.json** contain extracted values.
 
 
-## How to Test POST with Webhook
-> This is no longer supported method hence it wont work
 
-Create a `.env` file and create a WEBHOOK_URL and WEBHOOK_SECRET like this:
-```env
-WEBHOOK_SECRET = "WHATEVER THIS IS"
-WEBHOOK_URL = "http://localhost:3000/api/webhook"
-```
-Just make sure it is the same WEBHOOK_SECRET as the one used in front-end
-
-Open `send_back.py` and update:
-
-```python
-bucket = storage_client.bucket("processed_output_bucket")
-blob = bucket.blob("processed_path/16746721153392958237/0/DUMMY 2 - 2307 - ROBERT-0_finalized.json")
-```
-To the bucket and finalized file of your choice.
-And then run the python file 
-
-```python
-python3 send_back.py
-```
-
-## In Production
-When hosting the site update the environment variables:
-
-Update `WEBHOOK_URL` to the actual link.
-
-Replace `WEBHOOK_SECRET` with a secure, random string.
 
 
 ## Documentation links
