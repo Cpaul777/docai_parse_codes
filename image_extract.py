@@ -54,7 +54,6 @@ def clean_img(blob):
     """
         Args:
             blob : The document to be processed
-            
     """
 
     document = documentai.Document.from_json(
@@ -124,7 +123,7 @@ if __name__ == '__main__':
 
     # Load Document JSON
     document = documentai.Document.from_json(blob.download_as_bytes())
-    result = clean_img(document)
+    result = clean_img(blob)
     if result is None:
         raise ValueError("No image to convert")
     with open("savedpdf.pdf", "wb") as f:

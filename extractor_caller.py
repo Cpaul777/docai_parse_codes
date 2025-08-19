@@ -202,7 +202,7 @@ def main(mime_type, input, userId):
     input_mime_type = mime_type
    
     # Field mask specifies which data to get from json so it doesnt load everything
-    field_mask = "pages.image"
+    # field_mask = "pages.image"
 
     # For testing purposes without going through the whole trigger-function
     # hardcoded getting the document and processing it 
@@ -225,7 +225,7 @@ def main(mime_type, input, userId):
         # processor_version_id=processor_version_id,
         input_mime_type=input_mime_type,
         # gcs_input_prefix=gcs_input_prefix,
-        field_mask=field_mask
+        # field_mask=field_mask
     )
 
 if __name__ == '__main__':
