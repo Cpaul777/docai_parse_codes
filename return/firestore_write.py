@@ -13,10 +13,13 @@ def check_for_doc(collection, docname):
     """
     collection_ref = db.collection(collection)
     counter = 0
-    while collection_ref.document(docname).get().exists:
-        name = f"{docname}({counter})"
-        counter += 1
-    
+    name = docname
+    while True:
+        if collection_ref.document(name).get().exists:
+            name = f"{docname}({counter})"
+            counter += 1
+        else:
+            break
     return name
 
 # Writes to firestore database
