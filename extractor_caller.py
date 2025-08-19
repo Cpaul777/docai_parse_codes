@@ -90,8 +90,6 @@ def batch_process_documents(
     if metadata.state != documentai.BatchProcessMetadata.State.SUCCEEDED:
         raise ValueError(f"Batch Process Failed: {metadata.state_message}")
 
-    storage_client = storage.Client()
-
     print("Output files:")
     # One process per Input Document
     for process in list(metadata.individual_process_statuses):
@@ -110,11 +108,11 @@ def batch_process_documents(
 
         # Store the bucket name and prefix
         output_bucket, output_prefix = matches.groups()
+        storage_client = storage.Client(output_bucket)
 
         # Get List of Document Objects from the Output Bucket
         output_blobs = storage_client.list_blobs(output_bucket, prefix=output_prefix)
 
-        storage_client = storage.Client(output_bucket)
         bucket = storage_client.bucket(output_bucket)
 
         # Document AI may output multiple JSON files per source file

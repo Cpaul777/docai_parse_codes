@@ -11,8 +11,9 @@ def check_for_doc(collection, docname):
     """ Will check firestore if the file already exists
         if it does, it will add an incrementation (1), (2) etc.
     """
+    collection_ref = db.collection(collection)
     counter = 0
-    while collection.document(docname).get().exists:
+    while collection_ref.document(docname).get().exists:
         name = f"{docname}({counter})"
         counter += 1
     
@@ -24,7 +25,7 @@ def write_to_firestore(data, prefix: str, collection: Optional[str]):
     docname = match.group(0) if match else prefix
 
     docname = check_for_doc(collection, docname)
-    
+
     if match:
         print(f"Document name extracted: {docname}")
     if collection:
