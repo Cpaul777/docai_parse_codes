@@ -102,7 +102,7 @@ def upload_pdf_gcs(filename, userId, page_list):
     print("The output blob from clean_img: ", output_blob)
 
     output_blob = re.sub(r'^.*/', '', output_blob)
-
+    output_blob = re.sub(r'-\d(?=\.)', '', output_blob)
     print("New output_blob: ", output_blob)
 
     output_blob = f"{userId}/{output_blob}"
