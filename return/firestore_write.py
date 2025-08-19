@@ -7,18 +7,32 @@ import re
 app = firebase_admin.initialize_app()
 db = firestore.client(app, "extracted-data-db")
 
+def check_for_doc(collection, docname):
+    """ Will check firestore if the file already exists
+        if it does, it will add an incrementation (1), (2) etc.
+    """
+    counter = 0
+    while collection.document(docname).get().exists:
+        name = f"{docname}({counter})"
+        counter += 1
+    
+    return name
+
 # Writes to firestore database
 def write_to_firestore(data, prefix: str, collection: Optional[str]):
     match = re.search(r'[^/]+$', prefix)
     docname = match.group(0) if match else prefix
 
+    docname = check_for_doc(collection, docname)
+    
     if match:
         print(f"Document name extracted: {docname}")
-    if collection is not None:
+    if collection:
         print("Writing to database")
         doc_ref = db.collection(collection).document(docname)
         doc_ref.set(data)
     else:
+        print("Writing to user Collection")
         doc_ref = db.collection("user").document(docname)
         doc_ref.set(data)
 
