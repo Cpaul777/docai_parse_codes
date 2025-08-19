@@ -2,12 +2,10 @@ from google.api_core.exceptions import InternalServerError
 from google.api_core.exceptions import RetryError
 from google.cloud import documentai
 from google.cloud import storage
-
+from image_extract import clean_img, upload_pdf_gcs
 from typing import Optional
 import re
 import json
-import time
-import os
 import handle_data_2307
 
 def batch_process_documents(
@@ -97,7 +95,9 @@ def batch_process_documents(
     print("Output files:")
     # One process per Input Document
     for process in list(metadata.individual_process_statuses):
-        
+        # The list for uploading the pdf pages 
+        pdf_list = [] 
+
         # output_gcs_destination format: gs://BUCKET/PREFIX/OPERATION_NUMBER/INPUT_FILE_NUMBER/
         # The Cloud Storage API requires the bucket name and URI prefix separately
         matches = re.match(r"gs://(.*?)/(.*)", process.output_gcs_destination)
@@ -114,6 +114,9 @@ def batch_process_documents(
         # Get List of Document Objects from the Output Bucket
         output_blobs = storage_client.list_blobs(output_bucket, prefix=output_prefix)
 
+        storage_client = storage.Client(output_bucket)
+        bucket = storage_client.bucket(output_bucket)
+
         # Document AI may output multiple JSON files per source file
         for blob in output_blobs:
             # Document AI should only output JSON files to GCS
@@ -122,22 +125,25 @@ def batch_process_documents(
                     f"Skipping non-supported file: {blob.name} - Mimetype: {blob.content_type}"
                 )
                 continue
-            process_output(blob, output_bucket, userId)
+            if blob.name.endswith("_finalized.json"):
+                continue
+            process_output(blob, bucket, userId)
+            pdf_list.append(clean_img(blob))
+        
+        upload_pdf_gcs(blob.name, userId, pdf_list)
+            
 
 # Process the output 
-def process_output(blob, output_bucket, userId):
-    storage_client = storage.Client(output_bucket)
-    bucket = storage_client.bucket(output_bucket)
+def process_output(blob, bucket, userId):
+    
     print("userId: ",userId)
-
-    if blob.name.endswith("_finalized.json"):
-        return
 
     print(f"Fetching {blob.name}")
     document = documentai.Document.from_json(
         blob.download_as_bytes(),
         ignore_unknown_fields=True
     )
+
     # Extracted data is now handled by handle_data_2307.handle_data
     final_data = handle_data_2307.handle_data(document)
 
@@ -153,7 +159,7 @@ def process_output(blob, output_bucket, userId):
         content_type="application/json"
     )
 
-    print(f"Extracted fields saved to: gs://{output_bucket}/{output_blob_name}")
+    print(f"Extracted fields saved to: gs://{bucket}/{output_blob_name}")
 
 # Detect the file type
 def detect_mime_type(filename):
@@ -187,7 +193,7 @@ def main(mime_type, input, userId):
     location = "us"        
     
     # Path to the output
-    gcs_output_uri = f"gs://processed_output_bucket/processed_path/"
+    gcs_output_uri = f"gs://processed_output_bucket/processed_path/{userId}"
     
     # Configure Input pathing.
     gcs_input_uri = f"gs://run-sources-medtax-ocr-prototype-us-central1/{input}"    
@@ -195,14 +201,16 @@ def main(mime_type, input, userId):
     # Set the input mime type
     input_mime_type = mime_type
    
-    """
-        # For testing purposes without going through the whole trigger-function
-        # hardcoded getting the document and processing it 
+    # Field mask specifies which data to get from json so it doesnt load everything
+    field_mask = "pages.image"
 
-        gcs_output_uri = f"gs://practice_sample_training/docai/"                  
-        gcs_input_uri = f"gs://run-sources-medtax-ocr-prototype-us-central1/4 form 2307 pictures.pdf"
-        input_mime_type = "application/pdf"
-    """
+    # For testing purposes without going through the whole trigger-function
+    # hardcoded getting the document and processing it 
+
+    # gcs_output_uri = f"gs://practice_sample_training/results/"                  
+    # gcs_input_uri = f"gs://run-sources-medtax-ocr-prototype-us-central1/124.pdf"
+    # input_mime_type = "application/pdf"
+    
     # This is for whole folder process, Not necessary for now
     gcs_input_prefix = f"gs://run-sources-medtax-ocr-prototype-us-central1/{input}"
     
@@ -217,8 +225,8 @@ def main(mime_type, input, userId):
         # processor_version_id=processor_version_id,
         input_mime_type=input_mime_type,
         # gcs_input_prefix=gcs_input_prefix,
+        field_mask=field_mask
     )
-
 
 if __name__ == '__main__':
     main("application/pdf", "2307 - BEA  SAMPLE (2).pdf", userId="sample")
