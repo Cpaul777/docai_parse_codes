@@ -71,10 +71,12 @@ def clean_img(blob):
             print("The mime type is: ", mime_type)
             nparr = np.frombuffer(img_bytes, np.uint8)
             img = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
+
             print("Deskewing now")
             img = deskew_using_layout(img, page)
 
             img = cv2.medianBlur(img, 1)
+            
             img = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
                                         cv2.THRESH_BINARY, 35, 10)
             print("DONE")
