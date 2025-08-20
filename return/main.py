@@ -1,6 +1,7 @@
 import functions_framework
 from cloudevents.http import CloudEvent
 from google.cloud import storage
+from calc_field import calculate
 import dir
 import firestore_write
 import json
@@ -38,6 +39,11 @@ def sendTrigger(event: CloudEvent):
     name = re.sub(r'^.*/', '', name)
     name = re.sub(r'-\d+_finalized\.json$', '', name)
 
+    if document.get("table_rows"):
+        document = calculate(document)
+    else:
+        print("Theres no table_rows.")
+    
     firestore_write.write_to_firestore(document, name, userId)
 
     print("Process Done", name)
