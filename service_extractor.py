@@ -6,7 +6,7 @@ from image_extract import clean_img, upload_pdf_gcs
 from typing import Optional
 import re
 import json
-import handle_data_2307
+import service_invoice_data_handler
 
 def batch_process_documents(
     userId: str,
@@ -136,7 +136,7 @@ def batch_process_documents(
 # Process the output 
 def process_output(blob, bucket, userId, doc_type):
     
-    print("Whats the userId: ", userId)
+    print("userId: ",userId)
 
     print(f"Fetching {blob.name}")
     document = documentai.Document.from_json(
@@ -145,7 +145,7 @@ def process_output(blob, bucket, userId, doc_type):
     )
 
     # Extracted data is now handled by handle_data_2307.handle_data
-    final_data = handle_data_2307.handle_data(document)
+    final_data = service_invoice_data_handler.handle_data(document)
 
     # Save extracted key-value pairs back to GCS
     output_blob_name = blob.name.replace(".json", "_finalized.json")
@@ -183,8 +183,8 @@ def main(mime_type, input, userId, doc_type):
     # Project ID
     project_id = "medtax-ocr-prototype"               
 
-     # This is the ID of custom_processor_2307 processor
-    processor_id = "c1792eca909556ee"      
+     # This is the ID of service-invoice processor
+    processor_id = "[ADD THE SERVICE-INVOICE PROCESSOR ID HERE]"      
     
     # For a specific version of the parser
     # If not included in the argument, the default version will be used
@@ -192,7 +192,7 @@ def main(mime_type, input, userId, doc_type):
 
     # Processor location. For example: "us" or "eu".
     location = "us"        
-    """
+    
     # Path to the output
     gcs_output_uri = f"gs://processed_output_bucket/processed_path/{userId}"
     
@@ -201,18 +201,18 @@ def main(mime_type, input, userId, doc_type):
     
     # Set the input mime type
     input_mime_type = mime_type
-   """
+   
     # Field mask specifies which data to get from json so it doesnt load everything
     field_mask = "document.entities,document.pages"
 
     # For testing purposes without going through the whole trigger-function
     # hardcoded getting the document and processing it 
 
-    gcs_output_uri = f"gs://practice_sample_training/results/"                  
-    gcs_input_uri = f"gs://run-sources-medtax-ocr-prototype-us-central1/124.pdf"
-    input_mime_type = "application/pdf"
+    # gcs_output_uri = f"gs://practice_sample_training/results/"                  
+    # gcs_input_uri = f"gs://run-sources-medtax-ocr-prototype-us-central1/124.pdf"
+    # input_mime_type = "application/pdf"
     
-    # This is for whole folder process
+    # This is for whole folder process, Not necessary for now
     gcs_input_prefix = f"gs://run-sources-medtax-ocr-prototype-us-central1/{input}"
     
     print("Starting the process...")
@@ -233,8 +233,8 @@ def main(mime_type, input, userId, doc_type):
         # processor_version_id=processor_version_id,
         input_mime_type=input_mime_type,
         # gcs_input_prefix=gcs_input_prefix,
-        field_mask=field_mask,
+        # field_mask=field_mask
     )
 
 if __name__ == '__main__':
-    main("application/pdf", "2307 - BEA  SAMPLE (2).pdf", userId="sample", doc_type="form2307")
+    main("application/pdf", "2307 - BEA  SAMPLE (2).pdf", userId="sample", doc_type="service-invoice")

@@ -1,9 +1,9 @@
 import functions_framework
 from cloudevents.http import CloudEvent
-from typing import Any
 import json
 
 import extractor_caller
+import service_extractor
 
 @functions_framework.cloud_event
 def trigger(event: CloudEvent):
@@ -23,27 +23,49 @@ def trigger(event: CloudEvent):
     name = data.get("name")
     print(f"Received from bucket: {bucket}, file: {name}")
     
+    # Get the userId
     metadata = data.get('metadata') or {}
     userId = metadata.get('userid')
+    print("The userId: ", userId)
 
-    print("userId: ", userId)
-
+    # Get the Document Type, form2307, service-invoice, etc.
+    doc_type = metadata.get('doc-type')
+    print("The document type: ", doc_type)
+    
+    # Set default doc-type (change this if youre debugging/testing for a specific document type)
+    if doc_type == None or doc_type == "":
+        doc_type = "form2307"
+    
     # Store the document type (img, pdf)
     mime_type = extractor_caller.detect_mime_type(name)
     if mime_type == None:
         raise ValueError("Invalid file type")
     
     try:
-        """
-        IF INVIOCE:
-            CALL INVOICE EXTRACTOR
-        ELIF EXPENSE:
-            CALL EXPENSE EXTRACTOR
-        """
-        extractor_caller.main(
+        # Call functio according to its doc_type
+        if doc_type == "form2307":
+            extractor_caller.main(
             mime_type=mime_type,
-            input=name, 
-            userId=userId)
+            input=name,
+            userId=userId,
+            doc_type=doc_type,
+            )
+        elif doc_type == "service-invoice":
+            service_extractor.main(
+                mime_type=mime_type,
+                input=name,
+                userId=userId,
+                doc_type=doc_type,
+            )
+        else:
+            # Default to form 2307 extractor
+            extractor_caller.main(
+            mime_type=mime_type,
+            input=name,
+            userId=userId,
+            doc_type=doc_type,
+            )
+
     except ValueError:
         print("Error in extractor_caller.main, invalid input file type or content.")
     print("Process Complete")

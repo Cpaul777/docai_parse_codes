@@ -2,7 +2,6 @@
 
 from google.cloud import storage
 from google.cloud import documentai
-from typing import Optional
 import img2pdf
 import cv2, numpy as np
 import base64
@@ -11,7 +10,7 @@ import re
 # The bucket location
 bucket_name = "document_img_bucket"
 
-def deskew_using_layout(img, page):
+def deskew_using_layout(img, pages):
     """
     Deskews an image using Document AI layout metadata.
     
@@ -21,7 +20,7 @@ def deskew_using_layout(img, page):
     angles = []
 
     # Iterate over text blocks in the page layout
-    for block in page.blocks:
+    for block in pages.blocks:
         bbox = block.layout.bounding_poly.normalized_vertices
         if len(bbox) == 4:
             # Compute angle of the line from top-left to top-right
@@ -64,7 +63,7 @@ def clean_img(blob):
         img_info = page.image
         if img_info and img_info.content:
 
-            if(isinstance(page.image.content, bytes)):
+            if(isinstance(img_info.content, bytes)):
                 img_bytes = img_info.content
                 
             else:

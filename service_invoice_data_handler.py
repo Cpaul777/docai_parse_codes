@@ -24,7 +24,7 @@ def handle_data(document):
         "zip_code_8A": "",
         "confidence_average" : "0.0",
     }
-    
+
     table_values = ["income_payment_subject",
                     "atc",
                     "first_month",
