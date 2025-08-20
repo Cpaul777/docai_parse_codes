@@ -7,6 +7,7 @@ from typing import Optional
 import re
 import json
 import handle_data_2307
+from google.protobuf import field_mask_pb2
 
 def batch_process_documents(
     userId: str,
@@ -129,7 +130,7 @@ def batch_process_documents(
                 continue
             process_output(blob, bucket, userId, doc_type)
             pdf_list.append(clean_img(blob))
-        
+        print("Stitching pdf")
         upload_pdf_gcs(blob.name, userId, pdf_list)
             
 
@@ -192,7 +193,7 @@ def main(mime_type, input, userId, doc_type):
 
     # Processor location. For example: "us" or "eu".
     location = "us"        
-    """
+   
     # Path to the output
     gcs_output_uri = f"gs://processed_output_bucket/processed_path/{userId}"
     
@@ -201,17 +202,18 @@ def main(mime_type, input, userId, doc_type):
     
     # Set the input mime type
     input_mime_type = mime_type
-   """
+   
     # Field mask specifies which data to get from json so it doesnt load everything
-    field_mask = "document.entities,document.pages"
-
+    field_mask = "entities,pages.image,pages.blocks"
+    
+    """
     # For testing purposes without going through the whole trigger-function
     # hardcoded getting the document and processing it 
 
     gcs_output_uri = f"gs://practice_sample_training/results/"                  
-    gcs_input_uri = f"gs://run-sources-medtax-ocr-prototype-us-central1/124.pdf"
-    input_mime_type = "application/pdf"
-    
+    gcs_input_uri = f"gs://practice_sample_training/BRO WAHAPEN TO YOU.jpg"
+    input_mime_type = "image/jpeg"
+    """
     # This is for whole folder process
     gcs_input_prefix = f"gs://run-sources-medtax-ocr-prototype-us-central1/{input}"
     
@@ -237,4 +239,4 @@ def main(mime_type, input, userId, doc_type):
     )
 
 if __name__ == '__main__':
-    main("application/pdf", "2307 - BEA  SAMPLE (2).pdf", userId="sample", doc_type="form2307")
+    main("application/pdf", "2307 - BEA  SAMPLE (5).pdf", userId="sample", doc_type="form2307")

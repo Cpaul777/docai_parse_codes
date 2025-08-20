@@ -18,35 +18,27 @@ def deskew_using_layout(img, pages):
     page: document.pages[i] from Document AI
     """
     angles = []
-
-    # Iterate over text blocks in the page layout
     for block in pages.blocks:
-        bbox = block.layout.bounding_poly.normalized_vertices
-        if len(bbox) == 4:
-            # Compute angle of the line from top-left to top-right
+        bbox = sorted(block.layout.bounding_poly.normalized_vertices,
+                      key=lambda v: (v.y, v.x))  # sort by top row first
+        if len(bbox) >= 2:
+            
             dx = bbox[1].x - bbox[0].x
             dy = bbox[1].y - bbox[0].y
-            if dx != 0:
-                angle = np.degrees(np.arctan2(dy, dx))
-                angles.append(angle)
-
+            angle = np.degrees(np.arctan2(dy, dx))
+            angles.append(angle)
     if not angles:
-        return img  # no layout info, fallback to original image
+        print("not angles")
+        return img
 
-    # Average the angles
-    avg_angle = np.mean(angles)
-
-    # Convert normalized coordinates to pixel coordinates
+    avg_angle = np.median(angles)  
     (h, w) = img.shape
     center = (w // 2, h // 2)
-
-    # Rotate the image to deskew
-    M = cv2.getRotationMatrix2D(center, float(-avg_angle), 1.0)
-    deskewed = cv2.warpAffine(img, M, (w, h),
-                              flags=cv2.INTER_CUBIC,
-                              borderMode=cv2.BORDER_REPLICATE)
-    print("deskewed done")
-    return deskewed
+    M = cv2.getRotationMatrix2D(center, -avg_angle, 1.0) #type: ignore
+    print("returning fixed rotation")
+    return cv2.warpAffine(img, M, (w, h),
+                          flags=cv2.INTER_CUBIC,
+                          borderMode=cv2.BORDER_REPLICATE)
 
 def clean_img(blob):
 
@@ -79,6 +71,7 @@ def clean_img(blob):
             print("The mime type is: ", mime_type)
             nparr = np.frombuffer(img_bytes, np.uint8)
             img = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
+            print("Deskewing now")
             img = deskew_using_layout(img, page)
 
             img = cv2.medianBlur(img, 1)
@@ -119,7 +112,7 @@ if __name__ == '__main__':
     storage_client = storage.Client()
     bucket = storage_client.bucket("practice_sample_training")
     blob = bucket.blob("results/15737412520703530062/0/124-0.json")
-
+    
     # Load Document JSON
     document = documentai.Document.from_json(blob.download_as_bytes())
     result = clean_img(blob)
@@ -128,3 +121,6 @@ if __name__ == '__main__':
     with open("savedpdf.pdf", "wb") as f:
         f.write(img2pdf.convert(result))  #type: ignore
 
+
+
+""""""

@@ -139,6 +139,7 @@ def handle_data(document):
     field_values["confidence_average"] = str(round(confidence, 2))
     try:
         # Adding table_row key to the field_values and its value is the table rows
+        extracted_data.clear()
         return {**field_values, "table_rows": table_rows}
     except Exception as e:
         print(f"Error processing output: {e}")
