@@ -23,7 +23,7 @@ def check_for_doc(collection, docname):
     return name
 
 # Writes to firestore database
-def write_to_firestore(data, prefix: str, collection: Optional[str] = None):
+def write_to_firestore(data, prefix: str, collection):
     match = re.search(r'[^/]+$', prefix)
     docname = match.group(0) if match else prefix
     pdf_name = docname

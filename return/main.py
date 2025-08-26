@@ -2,11 +2,10 @@ import functions_framework
 from cloudevents.http import CloudEvent
 from google.cloud import storage
 from calc_field import calculate
-import dir
+from getquarter import quarter
 import firestore_write
 import json
 import re
-
 
 @functions_framework.cloud_event
 def sendTrigger(event: CloudEvent):
@@ -32,6 +31,9 @@ def sendTrigger(event: CloudEvent):
     userId = metadata.get("userid")
     print("userId: ", userId)
 
+    doc_type = metadata.get('docType')
+    print("The document type: ", doc_type)
+
     print(f"Fetching {blob.name}")
     bytes = blob.download_as_bytes()
     document = json.loads(bytes)
@@ -39,11 +41,13 @@ def sendTrigger(event: CloudEvent):
     name = re.sub(r'^.*/', '', name)
     name = re.sub(r'-\d+_finalized\.json$', '', name)
 
+    document = quarter(document)
+    
     if document.get("table_rows"):
         document = calculate(document)
     else:
         print("Theres no table_rows.")
     
-    firestore_write.write_to_firestore(document, name, userId)
+    firestore_write.write_to_firestore(document, name, doc_type)
 
     print("Process Done", name)
