@@ -6,9 +6,10 @@ import img2pdf
 import cv2, numpy as np
 import base64
 import re
+import uuid
 
 # The bucket location
-bucket_name = "document_img_bucket"
+BUCKET_NAME = "document_img_bucket"
 
 def deskew_using_layout(img, pages):
     """
@@ -67,6 +68,7 @@ def clean_img(blob):
             ext = ".png" #png by default
             if("jpeg" in mime_type or "jpg" in mime_type):
                 ext = ".jpg"
+                print("Entered the if statement, the extension is: ", ext)
             
             print("The mime type is: ", mime_type)
             nparr = np.frombuffer(img_bytes, np.uint8)
@@ -84,12 +86,11 @@ def clean_img(blob):
             _, final_img = cv2.imencode(ext, img)
             new_pdf = (final_img.tobytes())
             return new_pdf
-            
-
-def upload_pdf_gcs(filename, userId, page_list):
+ 
+def upload_pdf_gcs(filename, docType, page_list):
 
     storage_client = storage.Client()
-    bucket = storage_client.bucket(bucket_name) # This is the bucket where the images are stored
+    bucket = storage_client.bucket(BUCKET_NAME) # This is the bucket where the images are stored
     output_blob = filename.replace(".json", ".pdf")
 
     print("The output blob from clean_img: ", output_blob)
@@ -98,31 +99,40 @@ def upload_pdf_gcs(filename, userId, page_list):
     output_blob = re.sub(r'-\d(?=\.)', '', output_blob)
     print("New output_blob: ", output_blob)
 
-    output_blob = f"{userId}/{output_blob}"
-    print("Applied the userId: ", output_blob )
+    output_blob = f"{docType}/{output_blob}"
+    print("Applied the docType: ", output_blob )
 
     new_pdf = img2pdf.convert(page_list)
 
     # Upload to GCS
     image_blob = bucket.blob(output_blob)
+
     image_blob.upload_from_string(new_pdf, content_type="application/pdf")
-    print("sucessfully uploaded image in: ", output_blob)
-        
+    
+    print(f"sucessfully uploaded image in: {bucket.name}/{output_blob}")
+
+    # Generate access token
+    token = str(uuid.uuid4())
+
+    # Add url metadata 
+    image_blob.metadata = {
+        "firebaseStorageDownloadTokens": token
+    }
+    image_blob.patch()
+    print("Done adding metadata")
+
 if __name__ == '__main__':
+
+
     # For testing purposes
     # GCS setup
     storage_client = storage.Client()
     bucket = storage_client.bucket("practice_sample_training")
     blob = bucket.blob("results/15737412520703530062/0/124-0.json")
     
+
     # Load Document JSON
     document = documentai.Document.from_json(blob.download_as_bytes())
     result = clean_img(blob)
-    if result is None:
-        raise ValueError("No image to convert")
-    with open("savedpdf.pdf", "wb") as f:
-        f.write(img2pdf.convert(result))  #type: ignore
-
-
-
-""""""
+    upload_pdf_gcs(blob.name, "sample", [result])
+    print("process done")

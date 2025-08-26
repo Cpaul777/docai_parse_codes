@@ -131,7 +131,7 @@ def batch_process_documents(
             process_output(blob, bucket, userId, doc_type)
             pdf_list.append(clean_img(blob))
         print("Stitching pdf")
-        upload_pdf_gcs(blob.name, userId, pdf_list)
+        upload_pdf_gcs(blob.name, doc_type, pdf_list)
             
 
 # Process the output 
@@ -153,7 +153,7 @@ def process_output(blob, bucket, userId, doc_type):
     text_blob = bucket.blob(output_blob_name)
     text_blob.metadata = {
         "userid" : userId,
-        "doc-type" : doc_type,
+        "docType" : doc_type,
     }
 
     text_blob.upload_from_string(
@@ -193,27 +193,28 @@ def main(mime_type, input, userId, doc_type):
 
     # Processor location. For example: "us" or "eu".
     location = "us"        
-   
+    
     # Path to the output
-    gcs_output_uri = f"gs://processed_output_bucket/processed_path/{userId}"
+    gcs_output_uri = f"gs://processed_output_bucket/processed_path/{doc_type}"
     
     # Configure Input pathing.
     gcs_input_uri = f"gs://run-sources-medtax-ocr-prototype-us-central1/{input}"    
     
     # Set the input mime type
     input_mime_type = mime_type
-   
+    
     # Field mask specifies which data to get from json so it doesnt load everything
     field_mask = "entities,pages.image,pages.blocks"
-    
+
     """
     # For testing purposes without going through the whole trigger-function
     # hardcoded getting the document and processing it 
 
-    gcs_output_uri = f"gs://practice_sample_training/results/"                  
+    gcs_output_uri = f"gs://processed_output_bucket/processed_path/{doc_type}"                  
     gcs_input_uri = f"gs://practice_sample_training/BRO WAHAPEN TO YOU.jpg"
     input_mime_type = "image/jpeg"
     """
+    
     # This is for whole folder process
     gcs_input_prefix = f"gs://run-sources-medtax-ocr-prototype-us-central1/{input}"
     

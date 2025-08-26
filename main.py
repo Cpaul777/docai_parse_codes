@@ -29,7 +29,7 @@ def trigger(event: CloudEvent):
     print("The userId: ", userId)
 
     # Get the Document Type, form2307, service-invoice, etc.
-    doc_type = metadata.get('doc-type')
+    doc_type = metadata.get('docType')
     print("The document type: ", doc_type)
     
     # Set default doc-type (change this if youre debugging/testing for a specific document type)
@@ -50,13 +50,16 @@ def trigger(event: CloudEvent):
             userId=userId,
             doc_type=doc_type,
             )
-        elif doc_type == "service-invoice":
+        elif doc_type == "service_invoice":
             service_extractor.main(
                 mime_type=mime_type,
                 input=name,
                 userId=userId,
                 doc_type=doc_type,
             )
+
+        # TODO: AFTER CREATING THE EXTRACTOR FOR EXPENSE RECEIPT CREATE THE ELIF
+
         else:
             # Default to form 2307 extractor
             extractor_caller.main(

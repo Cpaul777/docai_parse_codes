@@ -125,7 +125,6 @@ def handle_data(document):
             if not validate_date_range(field_values["from_date"], field_values["to_date"]):
                 raise ValueError("Validatiing date Failed")
         except ValueError as e:
-            # Printing errors at logs
             print("Caught an Error: ", e)
     
     # Get the confidence average (Currently only for field values not tables)
