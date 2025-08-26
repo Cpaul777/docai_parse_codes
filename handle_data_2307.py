@@ -176,7 +176,7 @@ def norm_tin(num):
     num = ''.join(filter(str.isdigit, num))  # Remove non-numeric characters
     if len(num) == 9:
         num = f"{num[:3]}-{num[3:6]}-{num[6:]}"  # Format XXX-XXX-XXX
-    elif len(num) > 9 and len(num) < 13:
+    elif len(num) > 9 and len(num) < 15:
         num = f"{num[:3]}-{num[3:6]}-{num[6:9]}-{num[9:]}" # Format XXX-XXX-XXX-XXXX
     else:
         num = f"{num[:3]}-{num[3:6]}-{num[6:9]}-{num[9:]} [INVALID]"
