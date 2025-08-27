@@ -3,6 +3,7 @@ from cloudevents.http import CloudEvent
 from google.cloud import storage
 from calc_field import calculate
 from getquarter import quarter
+from isSecondPage import isRelevant
 import firestore_write
 import json
 import re
@@ -41,13 +42,17 @@ def sendTrigger(event: CloudEvent):
     name = re.sub(r'^.*/', '', name)
     name = re.sub(r'-\d+_finalized\.json$', '', name)
 
-    document = quarter(document)
-    
-    if document.get("table_rows"):
-        document = calculate(document)
-    else:
-        print("Theres no table_rows.")
-    
-    firestore_write.write_to_firestore(document, name, doc_type)
+    relevant = isRelevant(document)
+    if(relevant):
+        document = quarter(document)
+        
+        if document.get("table_rows"):
+            document = calculate(document)
+        else:
+            print("Theres no table_rows.")
+        
+        firestore_write.write_to_firestore(document, name, doc_type)
 
-    print("Process Done", name)
+    else:
+        print("Irrelevant, didnt write")
+        print("Process Done", name)
