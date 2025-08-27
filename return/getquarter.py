@@ -2,24 +2,28 @@ from datetime import datetime
 from dateutil import parser
 
 def quarter(data: dict) -> dict:
-    dateToCompare = parser.parse(str(data.get("to_date")))
-    print(dateToCompare)
+    if data.get("to_date"):
+        dateToCompare = parser.parse(str(data.get("to_date")))
+        print(dateToCompare)
 
-    month = int(dateToCompare.month)
-    print("The month is", month)
+        month = int(dateToCompare.month)
+        print("The month is", month)
 
-    if(month >= 1 and month <= 3):
-        data['quarter'] = "1st Quarter"
-    elif(month >= 4 and month <= 6):
-        data['quarter'] = "2nd Quarter"
-    elif(month >= 7 and month <= 9):
-        data['quarter'] = "3rd Quarter"
-    elif(month >= 10 and month <= 12):
-        data['quarter'] = "4th Quarter"
+        if(month >= 1 and month <= 3):
+            data['quarter'] = "1st Quarter"
+        elif(month >= 4 and month <= 6):
+            data['quarter'] = "2nd Quarter"
+        elif(month >= 7 and month <= 9):
+            data['quarter'] = "3rd Quarter"
+        elif(month >= 10 and month <= 12):
+            data['quarter'] = "4th Quarter"
+        else:
+            data['quarter'] = ""
+        
+        return data
     else:
-        data['quarter'] = ""
-    
-    return data
+        print("No date available to parse")
+        return data
 
 
 if __name__ == '__main__':
