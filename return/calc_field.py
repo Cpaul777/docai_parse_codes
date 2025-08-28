@@ -36,7 +36,7 @@ def calculateForServiceInvoice(data:dict):
 
     data['gross_amount'] = f"{amountNetAndGross:,.2f}"
     data['withheld_amount'] = f"{withheld_tax:,.2f}"
-    data['tax_rate'] = tax_rate
+    data['tax_rate'] = f"{tax_rate}"
     data['net_receipt'] = f"{amountNetAndGross:,.2f}"
     data['net_amount'] = f"{net_amount:,.2f}"
     return data
