@@ -1,7 +1,7 @@
 import functions_framework
 from cloudevents.http import CloudEvent
 from google.cloud import storage
-from calc_field import calculate
+from calc_field import calculateTable, calculateForServiceInvoice
 from getquarter import quarter
 from isSecondPage import isRelevant
 import firestore_write
@@ -42,17 +42,21 @@ def sendTrigger(event: CloudEvent):
     name = re.sub(r'^.*/', '', name)
     name = re.sub(r'-\d+_finalized\.json$', '', name)
 
-    relevant = isRelevant(document)
-    if(relevant):
-        document = quarter(document)
-        
-        if document.get("table_rows"):
-            document = calculate(document)
-        else:
-            print("Theres no table_rows.")
-        
-        firestore_write.write_to_firestore(document, name, doc_type)
+    if(doc_type == "form2307"):
 
+        # Check if its an irrelevant second page
+        if(isRelevant(document)):
+            document = quarter(document)
+            
+            if document.get("table_rows"):
+                document = calculateTable(document)
+            
+            firestore_write.write_to_firestore(document, name, doc_type)
+    
+    elif(doc_type == "service_invoice"):
+            document = quarter(document)
+            document = calculateForServiceInvoice(document)
+            firestore_write.write_to_firestore(document, name, doc_type)
     else:
         print("Irrelevant, didnt write")
         print("Process Done", name)

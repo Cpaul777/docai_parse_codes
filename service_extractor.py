@@ -2,7 +2,7 @@ from google.api_core.exceptions import InternalServerError
 from google.api_core.exceptions import RetryError
 from google.cloud import documentai
 from google.cloud import storage
-from image_extract import clean_img, upload_pdf_gcs
+from image_extract import clean_img, upload_pdf_gcs, preprocess
 from typing import Optional
 import re
 import json
@@ -129,14 +129,12 @@ def batch_process_documents(
                 continue
             process_output(blob, bucket, userId, doc_type)
             pdf_list.append(clean_img(blob))
-        
-        upload_pdf_gcs(blob.name, userId, pdf_list)
+        print("Stitching pdf")
+        upload_pdf_gcs(blob.name, doc_type, pdf_list)
             
 
 # Process the output 
 def process_output(blob, bucket, userId, doc_type):
-    
-    print("userId: ",userId)
 
     print(f"Fetching {blob.name}")
     document = documentai.Document.from_json(
@@ -152,7 +150,7 @@ def process_output(blob, bucket, userId, doc_type):
     text_blob = bucket.blob(output_blob_name)
     text_blob.metadata = {
         "userid" : userId,
-        "doc-type" : doc_type,
+        "docType" : doc_type,
     }
 
     text_blob.upload_from_string(
@@ -174,17 +172,23 @@ def detect_mime_type(filename):
     else:
         return None
 
-def main(mime_type, input, userId, doc_type):
+def main(mime_type, bucket, input, userId, doc_type):
+
+    # Exclusive to service_invoice where preprocessing happens before processing for document AI
+    if(mime_type != "application/pdf"):
+        print("Preprocessing...")
+        bucket, input = preprocess(src_bucket=bucket, blob=input, mime_type=mime_type, docType=doc_type) #type: ignore
+        mime_type = detect_mime_type(input)
     
-    # SOON TO ADD: CONDITION FOR WHICH PROCESSOR TO USE
-    # EITHER INVOICE PARSER OR CUSTOM EXTRACTOR FOR 2307
-    # OR MAYBE JUST SEPARATE PYTHON FILES
-    
+    print(mime_type)
+    print("The input location is " , input)
+    print(bucket)
+
     # Project ID
     project_id = "medtax-ocr-prototype"               
 
-     # This is the ID of service-invoice processor
-    processor_id = "[ADD THE SERVICE-INVOICE PROCESSOR ID HERE]"      
+     # This is the ID of Service Invoice Parser processor
+    processor_id = "100eafc3a81f4960"      
     
     # For a specific version of the parser
     # If not included in the argument, the default version will be used
@@ -194,34 +198,38 @@ def main(mime_type, input, userId, doc_type):
     location = "us"        
     
     # Path to the output
-    gcs_output_uri = f"gs://processed_output_bucket/processed_path/{userId}"
+    gcs_output_uri = f"gs://processed_output_bucket/processed_path/{doc_type}"
     
     # Configure Input pathing.
-    gcs_input_uri = f"gs://run-sources-medtax-ocr-prototype-us-central1/{input}"    
+    gcs_input_uri = f"gs://{bucket}/{input}"    
     
     # Set the input mime type
     input_mime_type = mime_type
-   
-    # Field mask specifies which data to get from json so it doesnt load everything
-    field_mask = "document.entities,document.pages"
+    
 
+    # Field mask specifies which data to get from json so it doesnt load everything
+    field_mask = "entities,pages.image,pages.blocks"
+    
+    """
     # For testing purposes without going through the whole trigger-function
     # hardcoded getting the document and processing it 
-
-    # gcs_output_uri = f"gs://practice_sample_training/results/"                  
-    # gcs_input_uri = f"gs://run-sources-medtax-ocr-prototype-us-central1/124.pdf"
-    # input_mime_type = "application/pdf"
     
-    # This is for whole folder process, Not necessary for now
-    gcs_input_prefix = f"gs://run-sources-medtax-ocr-prototype-us-central1/{input}"
+    gcs_output_uri = f"gs://practice_sample_training/{doc_type}_tests"                 
+    gcs_input_uri = f"gs://{bucket}/{input}"
+    input_mime_type = mime_type
+    
+    print(gcs_output_uri)
+    print(gcs_input_uri)
+    """
+
+    # This is for whole folder process
+    gcs_input_prefix = f"gs://{bucket}/{input}"
     
     print("Starting the process...")
 
     # Commented arguments can be uncommented if you want to:
     # Specify a processor version
     # Batch upload using prefix
-    # Add a field mask (include what will be extracted on the json result of Document AI) 
-    # e.g. "page.image", "entities.properties", "entities.type" etc. Good for optimization
     batch_process_documents(
         userId=userId,
         doc_type=doc_type,
@@ -233,8 +241,8 @@ def main(mime_type, input, userId, doc_type):
         # processor_version_id=processor_version_id,
         input_mime_type=input_mime_type,
         # gcs_input_prefix=gcs_input_prefix,
-        # field_mask=field_mask
+        field_mask=field_mask,
     )
 
 if __name__ == '__main__':
-    main("application/pdf", "2307 - BEA  SAMPLE (2).pdf", userId="sample", doc_type="service-invoice")
+    main("image/jpeg", "practice_sample_training","ARAYY MOOOO_36.jpg", userId="sample", doc_type="service_invoice")

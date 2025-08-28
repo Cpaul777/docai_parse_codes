@@ -53,6 +53,7 @@ def trigger(event: CloudEvent):
         elif doc_type == "service_invoice":
             service_extractor.main(
                 mime_type=mime_type,
+                bucket=bucket,
                 input=name,
                 userId=userId,
                 doc_type=doc_type,

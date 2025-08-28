@@ -1,5 +1,5 @@
 
-def calculate(data: dict) -> dict:
+def calculateTable(data: dict) -> dict:
     tables = data["table_rows"]
 
     table_length = len(tables)
@@ -19,6 +19,27 @@ def calculate(data: dict) -> dict:
             break
 
     return data
+
+def calculateForServiceInvoice(data:dict):
+    table1 = data["Item_Table"]
+    table2 = data["Item_Table_2"]
+
+    # Table 1 Values
+    amountNetAndGross = float(table1.get("Amount", 0).replace(",","") or 0)
+
+    # Table 2 values
+    withheld_tax = float(table2.get("Less_Witholding_Tax", 0).replace(",", "") or 0)
+    net_amount = float(table2.get("Total_Amount_Due", 0).replaace(",","") or 0)
+    
+    tax_rate = (withheld_tax / amountNetAndGross)* 100
+
+    data['gross_amount'] = f"{amountNetAndGross:,.2f}"
+    data['withheld_amount'] = f"{withheld_tax:,.2f}"
+    data['tax_rate'] = tax_rate
+    data['net_receipt'] = f"{amountNetAndGross:,.2f}"
+    data['net_amount'] = f"{net_amount:,.2f}"
+    return data
+
 
 if __name__ == '__main__':
     from pprint import pprint
@@ -86,4 +107,26 @@ if __name__ == '__main__':
         ]
     }
 
-    pprint(calculate(data))
+    service_invoice_data = {
+        "Invoice_No": "0266",
+        "Date": "01/05/25 [INVALID]",
+        "Business_Address": "141 Mindanao Ave proj 8",
+        "Registered_Name": "Dr. Montano Ramos Gen Hospital",
+        "Sold_To_Tin": "307-555-668-0001",
+        "confidence_average": "1.0",
+        "Item_Table": [
+            {
+            "Amount": "40000",
+            "Item_Description_Nature_Of_Service": "Pr0fessi0na1 Fres 0aid t0 mesticat Practiti0neers"
+            }
+        ],
+        "Item_Table_2": [
+            {
+            "Less_Witholding_Tax": "5000",
+            "Total_Amount_Due": "45000"
+            }
+        ]
+    }
+
+    # pprint(calculateTable(data))
+    pprint(calculateForServiceInvoice(service_invoice_data))

@@ -153,7 +153,10 @@ def norm_zip_code(zip_code):
     Returns:
         str: The normalized ZIP code string in 'XXXX' format.
     """
-
+    mapping = {"O": "0", "o": "0", "I": "1", "l": "1", "S": "5", "p":"0"}
+    for k, v in mapping.items():
+        zip_code = zip_code.replace(k, v)
+        
     zip_code = ''.join(filter(str.isdigit, zip_code))  # Remove non-numeric characters
     if len(zip_code) == 4:
         return zip_code
@@ -173,6 +176,11 @@ def norm_tin(num):
     Returns:
         str: The normalized TIN string in a 9-13 digit format.
     """
+    
+    mapping = {"O": "0", "o": "0", "I": "1", "l": "1", "S": "5", "p":"0"}
+    for k, v in mapping.items():
+        num = num.replace(k, v)
+
     num = ''.join(filter(str.isdigit, num))  # Remove non-numeric characters
     if len(num) == 9:
         num = f"{num[:3]}-{num[3:6]}-{num[6:]}"  # Format XXX-XXX-XXX
@@ -194,7 +202,10 @@ def norm_date(date_str):
     Returns:
         str: The normalized date string in 'MM-DD-YYYY' format.
     """
-
+    mapping = {"O": "0", "o": "0", "I": "1", "l": "1", "S": "5", "p":"0"}
+    for k, v in mapping.items():
+        date_str = date_str.replace(k, v)
+    
     date_format = "%m-%d-%Y"  # MM-DD-YYYY
     date = "".join(filter(str.isdigit, date_str))  # Remove non-numeric characters
 

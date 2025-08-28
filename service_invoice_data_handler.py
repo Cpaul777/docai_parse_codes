@@ -1,6 +1,7 @@
 from datetime import datetime
 from dateutil import parser
-
+import re
+import json
 # CAPTURE ENYE CHARACTER ñ LATER
 
 # below is only used in __app__==__main__
@@ -9,30 +10,23 @@ input_prefix = "docai/14582948428165940265/0/DUMMY 3 - 2307 - ROBERT-0.json"
 
 def handle_data(document):
     field_values = {
-        "form_no": "2307",
-        "form_title": "Certificate of Creditable Income Taxes Withheld at Source",
-        "from_date": "",
-        "to_date": "",
-        "payee_tin_no": "",
-        "payee_name": "",
-        "payee_registered_address": "",
-        "zip_code_4A": "",
-        "payee_foreign_address": "",
-        "payor_tin_no": "",
-        "payor_name": "",
-        "payor_registered_address": "",
-        "zip_code_8A": "",
-        "confidence_average" : "0.0",
+        "Invoice_No": "",
+        "Date": "",
+        "Business_Address": "",
+        "Registered_Name": "",
+        "Sold_To_Tin": "",
     }
 
-    table_values = ["income_payment_subject",
-                    "atc",
-                    "first_month",
-                    "second_month",
-                    "third_month",
-                    "total_quarter",
-                    "tax_withheld_quarter",]
-    table_rows = []
+    table_one_values = ["Amount",
+                        "Item_Description_Nature_Of_Service",
+                    ]
+    
+    table_two_values = ["Less_Witholding_Tax",
+                        "Total_Amount_Due",
+                    ]
+    
+    Item_Table = []
+    Item_Table_2 = []
     
     """ 
     # FOR TESTING PURPOSES
@@ -50,19 +44,38 @@ def handle_data(document):
 
     # Get all fields in the json
     for field in document.entities:
-
         # Taking table rows
-        if field.type == "details_monthly_income_payment_taxes":
-            row_dict = {field_name: "" for field_name in table_values}
+        print("Processing Tables")
+        if field.type == "Item_Table":
+
+            row_dict = {field_name: "" for field_name in table_one_values}
+            
+            for property in field.properties:
+                property_type = property.type
+                value = property.mention_text
+
+                # Making Exception for only normalizing currency fields
+                if property_type != "Item_Description_Nature_Of_Service":
+                    value = norm_currency(value)
+                
+                if property_type in table_one_values:
+                    row_dict[property_type] = value
+                
+
+            Item_Table.append(row_dict)
+
+        elif field.type == "Item_Table_2":
+            row_dict2 = {field_name: "" for field_name in table_two_values}
 
             for property in field.properties:
                 property_type = property.type
                 value = property.mention_text
-                if property_type in table_values:
-                    row_dict[property_type] = value
-
-            table_rows.append(row_dict)
-
+                value = norm_currency(value)
+                if property_type in table_two_values:
+                        row_dict2[property_type] = value
+            
+            Item_Table_2.append(row_dict2)
+        
         confidence = round(field.confidence, 2)
         key = field.type.strip()
 
@@ -70,7 +83,7 @@ def handle_data(document):
         # normalized_value in the raw json are google AI suggested texts
         # Not safe for tin numbers and date
         if hasattr(field, 'normalized_value') and field.normalized_value:
-            if "_tin_no" in field.type or "_date" in field.type:
+            if "Invoice_No" in field.type or "Date" in field.type or "Sold_To_Tin" in field.type:
                 value = field.mention_text.strip()
             else:
                 value = field.normalized_value.text.strip()
@@ -82,7 +95,9 @@ def handle_data(document):
         extracted_data[f"{key}_confidence"] = confidence
 
     # Printed in the logs, for debugging purposes
-    # print(json.dumps(table_rows, indent=2))
+    # print(json.dumps(Item_Table, indent=2))
+    # print(json.dumps(Item_Table_2, indent=2))
+
 
     data = extracted_data
     count = 0
@@ -97,17 +112,17 @@ def handle_data(document):
             if value is None:
                 continue
             try:
-                if "_date" in key:
+                if "Date" in key:
                     # Normalize date fields
                     field_values[key] = norm_date(value)
 
-                elif "tin_no" in key:
+                elif "Sold_To_Tin" in key:
                     # Normalize TIN fields
                     field_values[key] = norm_tin(value)
 
-                elif "zip_code" in key:
+                elif "Invoice_No" in key:
                     # Normalize ZIP code fields
-                    field_values[key] = norm_zip_code(value)
+                    field_values[key] = norm_invoice_no(value)
                 else: 
                     field_values[key] = value
             except ValueError as e:
@@ -118,15 +133,6 @@ def handle_data(document):
 
     # For debugging purposes, printed at logs
     # print(json.dumps(field_values, indent=2))
-
-    # Validate the date range
-    if field_values["from_date"] and field_values["to_date"]:
-        try:
-            if not validate_date_range(field_values["from_date"], field_values["to_date"]):
-                raise ValueError("Validatiing date Failed")
-        except ValueError as e:
-            # Printing errors at logs
-            print("Caught an Error: ", e)
     
     # Get the confidence average (Currently only for field values not tables)
     for key in data.keys():
@@ -139,26 +145,26 @@ def handle_data(document):
     field_values["confidence_average"] = str(round(confidence, 2))
     try:
         # Adding table_row key to the field_values and its value is the table rows
-        return {**field_values, "table_rows": table_rows}
+        return {**field_values, "Item_Table": Item_Table, "Item_Table_2": Item_Table_2}
     except Exception as e:
         print(f"Error processing output: {e}")
 
-def norm_zip_code(zip_code):
+def norm_currency(currency):
     """
-    Normalize ZIP code strings to a standard 4-digit format.
+    Normalize currency received
     
     Args:
-        zip_code (str): The ZIP code string to normalize.
+        The amount/number
     
     Returns:
-        str: The normalized ZIP code string in 'XXXX' format.
+        str: The normalized currency in string in format.
     """
-
-    zip_code = ''.join(filter(str.isdigit, zip_code))  # Remove non-numeric characters
-    if len(zip_code) == 4:
-        return zip_code
-    else:
-        return (zip_code + " [INVALID]")
+    mapping = {"O": "0", "o": "0", "I": "1", "l": "1", "S": "5", "p":"0"}
+    for k, v in mapping.items():
+        currency = currency.replace(k, v)
+    
+    cleaned = re.sub(r"[^0-9.,-]", "", currency) #Removes non number values
+    return currency
 
 def norm_tin(num):
     """
@@ -173,10 +179,14 @@ def norm_tin(num):
     Returns:
         str: The normalized TIN string in a 9-13 digit format.
     """
+    mapping = {"O": "0", "o": "0", "I": "1", "l": "1", "S": "5", "p":"0"}
+    for k, v in mapping.items():
+        num = num.replace(k, v)
+    
     num = ''.join(filter(str.isdigit, num))  # Remove non-numeric characters
     if len(num) == 9:
         num = f"{num[:3]}-{num[3:6]}-{num[6:]}"  # Format XXX-XXX-XXX
-    elif len(num) > 9 and len(num) < 13:
+    elif len(num) > 9 and len(num) < 15:
         num = f"{num[:3]}-{num[3:6]}-{num[6:9]}-{num[9:]}" # Format XXX-XXX-XXX-XXXX
     else:
         num = f"{num[:3]}-{num[3:6]}-{num[6:9]}-{num[9:]} [INVALID]"
@@ -197,7 +207,7 @@ def norm_date(date_str):
 
     date_format = "%m-%d-%Y"  # MM-DD-YYYY
     date = "".join(filter(str.isdigit, date_str))  # Remove non-numeric characters
-
+    print("Normalizing Date filtered the digits ",date)
     # Handles 3-1-2025, 03-1-2025, 03-01-2025, 312025  
     if(len(date) < 6 or  len(date) > 8):
         return f"{date} [INVALID]"
@@ -216,6 +226,12 @@ def norm_date(date_str):
         raise ValueError(f"Cannot infer MM/DD from: '{date_str}'")
 
     # Fill and validate
+    print("Month: ",month, " Day: ", day, " Year: ", year)
+    
+    # Handles years that only has the last 2 digits
+    if ( len(year) == 2 and (f"20{year}" == str(datetime.now().year))):
+        year = f"20{year}"
+
     try:
         dt = datetime.strptime(f"{month.zfill(2)}-{day.zfill(2)}-{year}", date_format)
     except ValueError:
@@ -226,27 +242,24 @@ def norm_date(date_str):
             return dt.strftime(date_format)
         except ValueError:
             return f"{date_str} [INVALID]"
+    
     return dt.strftime(date_format)
 
-def validate_date_range(from_date_str, to_date_str):
+def norm_invoice_no(invoice_no):
     """
-    Validates that 'from_date' is not more recent than 'to_date'.
+    Normalize invoice number by filtering and mapping what isnt a digit
 
     Args:
-        from_date_str (str): Date string for the 'From' field (e.g., '2025-01-01')
-        to_date_str (str): Date string for the 'To' field (e.g., '2025-03-31')
+        invoice_no (str): The invoice number to normalize
 
     Returns:
-        bool: True if valid, False if invalid.
+        invoice_no (str): Normalized value of invoice number.
     """
-    try:
-        from_date = parser.parse(from_date_str)
-        to_date = parser.parse(to_date_str)
-        return from_date <= to_date
-    except Exception as e:
-        print(f"[Date Validation Error] {e}")
-        return False
-
+    mapping = {"O": "0", "o": "0", "I": "1", "l": "1", "S": "5", "p":"0"}
+    for k, v in mapping.items():
+        invoice_no = invoice_no.replace(k, v)
+    invoice_no = "".join(filter(str.isdigit, invoice_no))
+    return invoice_no
 def main():
     #   UNUSED
     # for testing purposes

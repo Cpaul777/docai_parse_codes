@@ -137,7 +137,6 @@ def batch_process_documents(
 # Process the output 
 def process_output(blob, bucket, userId, doc_type):
     
-    print("Whats the userId: ", userId)
 
     print(f"Fetching {blob.name}")
     document = documentai.Document.from_json(
@@ -176,10 +175,6 @@ def detect_mime_type(filename):
         return None
 
 def main(mime_type, input, userId, doc_type):
-    
-    # SOON TO ADD: CONDITION FOR WHICH PROCESSOR TO USE
-    # EITHER INVOICE PARSER OR CUSTOM EXTRACTOR FOR 2307
-    # OR MAYBE JUST SEPARATE PYTHON FILES
     
     # Project ID
     project_id = "medtax-ocr-prototype"               

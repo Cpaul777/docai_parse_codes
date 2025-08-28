@@ -2,8 +2,9 @@ from datetime import datetime
 from dateutil import parser
 
 def quarter(data: dict) -> dict:
-    if data.get("to_date"):
-        dateToCompare = parser.parse(str(data.get("to_date")))
+    date = data.get("to_date") or data.get("Date")
+    if (date):
+        dateToCompare = parser.parse(str(date))
         print(dateToCompare)
 
         month = int(dateToCompare.month)
