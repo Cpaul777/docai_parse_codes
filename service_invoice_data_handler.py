@@ -45,7 +45,6 @@ def handle_data(document):
     # Get all fields in the json
     for field in document.entities:
         # Taking table rows
-        print("Processing Tables")
         if field.type == "Item_Table":
 
             row_dict = {field_name: "" for field_name in table_one_values}
@@ -210,6 +209,7 @@ def norm_date(date_str):
     print("Normalizing Date filtered the digits ",date)
     # Handles 3-1-2025, 03-1-2025, 03-01-2025, 312025  
     if(len(date) < 6 or  len(date) > 8):
+        print("Early return: ", date)
         return f"{date} [INVALID]"
     year = date[-4:]
     mmdd = date[:-4]
@@ -229,7 +229,8 @@ def norm_date(date_str):
     print("Month: ",month, " Day: ", day, " Year: ", year)
     
     # Handles years that only has the last 2 digits
-    if ( len(year) == 2 and (f"20{year}" == str(datetime.now().year))):
+    if (len(year) == 2 and (f"20{year}" == str(datetime.now().year))):
+        print("The length of date is 2")
         year = f"20{year}"
 
     try:

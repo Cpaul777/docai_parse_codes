@@ -43,7 +43,6 @@ def deskew_using_layout(img, pages):
                           borderMode=cv2.BORDER_REPLICATE)
 
 def clean_img(blob):
-
     """
         Args:
             blob : The document to be processed
@@ -92,7 +91,7 @@ def clean_img(blob):
             new_pdf = (final_img.tobytes())
             return new_pdf
 
-# This function is for service_invoice only as of now 
+# This function is for service_invoice only as of now
 def preprocess(src_bucket, blob, mime_type, docType):
     print("the name of the file is: ", blob)
 

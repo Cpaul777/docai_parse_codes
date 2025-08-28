@@ -1,9 +1,9 @@
 import functions_framework
 from cloudevents.http import CloudEvent
-import json
-
+from detect_mime_type import detect_mime_type
 import extractor_caller
-import service_extractor
+import service_extractor 
+import json
 
 @functions_framework.cloud_event
 def trigger(event: CloudEvent):
@@ -37,7 +37,7 @@ def trigger(event: CloudEvent):
         doc_type = "form2307"
     
     # Store the document type (img, pdf)
-    mime_type = extractor_caller.detect_mime_type(name)
+    mime_type = detect_mime_type(name)
     if mime_type == None:
         raise ValueError("Invalid file type")
     
@@ -69,7 +69,7 @@ def trigger(event: CloudEvent):
             userId=userId,
             doc_type=doc_type,
             )
+    except ValueError as e:
+        raise ValueError(f"You have some error: {ValueError}") 
 
-    except ValueError:
-        print("Error in extractor_caller.main, invalid input file type or content.")
     print("Process Complete")

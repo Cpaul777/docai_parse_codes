@@ -3,6 +3,7 @@ from google.api_core.exceptions import RetryError
 from google.cloud import documentai
 from google.cloud import storage
 from image_extract import clean_img, upload_pdf_gcs, preprocess
+from detect_mime_type import detect_mime_type
 from typing import Optional
 import re
 import json
@@ -160,17 +161,6 @@ def process_output(blob, bucket, userId, doc_type):
 
     print(f"Extracted fields saved to: gs://{bucket}/{output_blob_name}")
 
-# Detect the file type
-def detect_mime_type(filename):
-    # Check what type of file it is
-    if filename.endswith(".pdf"):
-        return "application/pdf"
-    elif filename.endswith(".png"):
-        return "image/png"
-    elif filename.endswith((".jpg", ".jpeg")):
-        return "image/jpeg"
-    else:
-        return None
 
 def main(mime_type, bucket, input, userId, doc_type):
 
