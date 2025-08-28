@@ -55,6 +55,7 @@ def sendTrigger(event: CloudEvent):
         else:
             print("Irrelevant document, skipping...")
     elif(doc_type == "service_invoice"):
+            print("It is service invoice")
             document = quarter(document)
             document = calculateForServiceInvoice(document)
             firestore_write.write_to_firestore(document, name, doc_type)

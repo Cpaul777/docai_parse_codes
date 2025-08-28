@@ -21,15 +21,16 @@ def calculateTable(data: dict) -> dict:
     return data
 
 def calculateForServiceInvoice(data:dict):
-    table1 = data["Item_Table"]
-    table2 = data["Item_Table_2"]
+    table1 = data["Item_Table"][0]
+    table2 = data["Item_Table_2"][0]
+    print("Processing Item_Tables")
 
     # Table 1 Values
     amountNetAndGross = float(table1.get("Amount", 0).replace(",","") or 0)
 
     # Table 2 values
     withheld_tax = float(table2.get("Less_Witholding_Tax", 0).replace(",", "") or 0)
-    net_amount = float(table2.get("Total_Amount_Due", 0).replaace(",","") or 0)
+    net_amount = float(table2.get("Total_Amount_Due", 0).replace(",","") or 0)
     
     tax_rate = (withheld_tax / amountNetAndGross)* 100
 
