@@ -29,7 +29,8 @@ def trigger(event: CloudEvent):
     print("The userId: ", userId)
 
     # Get the Document Type, form2307, service-invoice, etc.
-    doc_type = metadata.get('docType')
+    # metadata from signedURL are all lower cased
+    doc_type = metadata.get('docType'.lower())
     print("The document type: ", doc_type)
     
     # Set default doc-type (change this if youre debugging/testing for a specific document type)
