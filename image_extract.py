@@ -119,7 +119,7 @@ def preprocess(src_bucket, blob, mime_type, docType):
     print("DONE")
 
     _, final_img = cv2.imencode(ext, img)
-    new_pdf = img2pdf.convert((final_img.tobytes()))
+    new_pdf = img2pdf.convert(final_img.tobytes())
 
     # Fixing the filename
     filename = re.sub(r'^.*/', '', blob)

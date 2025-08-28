@@ -205,45 +205,9 @@ def norm_date(date_str):
     """
 
     date_format = "%m-%d-%Y"  # MM-DD-YYYY
-    date = "".join(filter(str.isdigit, date_str))  # Remove non-numeric characters
-    print("Normalizing Date filtered the digits ",date)
-    # Handles 3-1-2025, 03-1-2025, 03-01-2025, 312025  
-    if(len(date) < 6 or  len(date) > 8):
-        print("Early return: ", date)
-        return f"{date} [INVALID]"
-    year = date[-4:]
-    mmdd = date[:-4]
-    if len(mmdd) == 4:
-        month = mmdd[:2]
-        day = mmdd[2:]
-    elif len(mmdd) == 3:
-        month = mmdd[:1]
-        day = mmdd[1:]
-    elif len(mmdd) == 2:
-        month = mmdd[:1]
-        day = mmdd[1:]
-    else:
-        raise ValueError(f"Cannot infer MM/DD from: '{date_str}'")
-
-    # Fill and validate
-    print("Month: ",month, " Day: ", day, " Year: ", year)
-    
-    # Handles years that only has the last 2 digits
-    if (len(year) == 2 and (f"20{year}" == str(datetime.now().year))):
-        print("The length of date is 2")
-        year = f"20{year}"
-
-    try:
-        dt = datetime.strptime(f"{month.zfill(2)}-{day.zfill(2)}-{year}", date_format)
-    except ValueError:
-        try:
-            m2 = mmdd[:2]
-            d2 = mmdd[2:]
-            dt = datetime.strptime(f"{m2.zfill(2)}-{d2.zfill(2)}-{year}", date_format)
-            return dt.strftime(date_format)
-        except ValueError:
-            return f"{date_str} [INVALID]"
-    
+    print("Normalizing Date filtered the digits ",date_str)
+   
+    dt = parser.parse(date_str, fuzzy=True)
     return dt.strftime(date_format)
 
 def norm_invoice_no(invoice_no):

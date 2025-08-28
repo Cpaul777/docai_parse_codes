@@ -159,7 +159,7 @@ def process_output(blob, bucket, userId, doc_type):
         content_type="application/json"
     )
 
-    print(f"Extracted fields saved to: gs://{bucket}/{output_blob_name}")
+    print(f"Extracted fields saved to: gs://{bucket.name}/{output_blob_name}")
 
 
 def main(mime_type, bucket, input, userId, doc_type):
@@ -167,7 +167,7 @@ def main(mime_type, bucket, input, userId, doc_type):
     # Exclusive to service_invoice where preprocessing happens before processing for document AI
     if(mime_type != "application/pdf"):
         print("Preprocessing...")
-        bucket, input = preprocess(src_bucket=bucket, blob=input, mime_type=mime_type, docType=doc_type) #type: ignore
+        bucket, input = preprocess(src_bucket=bucket, blob=input, mime_type=mime_type, docType=doc_type)
         mime_type = detect_mime_type(input)
     
     print(mime_type)

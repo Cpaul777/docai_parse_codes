@@ -162,18 +162,6 @@ def process_output(blob, bucket, userId, doc_type):
 
     print(f"Extracted fields saved to: gs://{bucket}/{output_blob_name}")
 
-# Detect the file type
-def detect_mime_type(filename):
-    # Check what type of file it is
-    if filename.endswith(".pdf"):
-        return "application/pdf"
-    elif filename.endswith(".png"):
-        return "image/png"
-    elif filename.endswith((".jpg", ".jpeg")):
-        return "image/jpeg"
-    else:
-        return None
-
 def main(mime_type, input, userId, doc_type):
     
     # Project ID
