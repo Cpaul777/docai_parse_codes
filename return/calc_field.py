@@ -1,45 +1,49 @@
 
 def calculateTable(data: dict) -> dict:
     tables = data["table_rows"]
+    if tables:
+        table_length = len(tables)
+        print("The length of the table is: ", table_length)
 
-    table_length = len(tables)
-    print("The length of the table is: ", table_length)
+        # Get the Total row and create new key value pairs with net_amount, gross_amount and withheld_amount
+        # Based on the calculated data
+        for i, table in enumerate(tables):
+            if "Total" in table["income_payment_subject"] and i != table_length - 1:
+                tq = float(table.get("total_quarter", 0).replace(",", "") or 0)
+                twq = float(table.get("tax_withheld_quarter", 0).replace(",", "") or 0)
 
-    # Get the Total row and create new key value pairs with net_amount, gross_amount and withheld_amount
-    # Based on the calculated data
-    for i, table in enumerate(tables):
-        if "Total" in table["income_payment_subject"] and i != table_length - 1:
-            tq = float(table.get("total_quarter", 0).replace(",", "") or 0)
-            twq = float(table.get("tax_withheld_quarter", 0).replace(",", "") or 0)
+                net_amount = tq - twq
+                data['net_amount'] = f"{net_amount:,.2f}"
+                data['gross_amount'] = f"{tq:,.2f}"
+                data['withheld_amount'] = f"{twq:,.2f}"
+                break
 
-            net_amount = tq - twq
-            data['net_amount'] = f"{net_amount:,.2f}"
-            data['gross_amount'] = f"{tq:,.2f}"
-            data['withheld_amount'] = f"{twq:,.2f}"
-            break
-
-    return data
+        return data
+    else:
+        return data
 
 def calculateForServiceInvoice(data:dict):
     table1 = data["Item_Table"][0]
     table2 = data["Item_Table_2"][0]
     print("Processing Item_Tables")
+    if(table2 and table1):
+        # Table 1 Values
+        amountNetAndGross = float(table1.get("Amount", 0).replace(",","") or 0)
 
-    # Table 1 Values
-    amountNetAndGross = float(table1.get("Amount", 0).replace(",","") or 0)
+        # Table 2 values
+        withheld_tax = float(table2.get("Less_Witholding_Tax", 0).replace(",", "") or 0)
+        net_amount = float(table2.get("Total_Amount_Due", 0).replace(",","") or 0)
+        
+        tax_rate = (withheld_tax / amountNetAndGross)* 100
 
-    # Table 2 values
-    withheld_tax = float(table2.get("Less_Witholding_Tax", 0).replace(",", "") or 0)
-    net_amount = float(table2.get("Total_Amount_Due", 0).replace(",","") or 0)
-    
-    tax_rate = (withheld_tax / amountNetAndGross)* 100
-
-    data['gross_amount'] = f"{amountNetAndGross:,.2f}"
-    data['withheld_amount'] = f"{withheld_tax:,.2f}"
-    data['tax_rate'] = f"{tax_rate}"
-    data['net_receipt'] = f"{amountNetAndGross:,.2f}"
-    data['net_amount'] = f"{net_amount:,.2f}"
-    return data
+        data['gross_amount'] = f"{amountNetAndGross:,.2f}"
+        data['withheld_amount'] = f"{withheld_tax:,.2f}"
+        data['tax_rate'] = f"{tax_rate}"
+        data['net_receipt'] = f"{amountNetAndGross:,.2f}"
+        data['net_amount'] = f"{net_amount:,.2f}"
+        return data
+    else:
+        return data
 
 
 if __name__ == '__main__':
