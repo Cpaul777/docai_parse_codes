@@ -6,6 +6,7 @@ import img2pdf
 import cv2, numpy as np
 import base64
 import re
+import json
 import uuid
 
 # The bucket location
@@ -62,15 +63,12 @@ def clean_img(blob):
             else:
                 img_bytes = base64.b64decode(img_info.content)
             
-            print("type:", type(img_info.content), "decoded bytes len:", len(img_bytes))
 
             mime_type = page.image.mime_type # Example: image/png
             ext = ".png" #png by default
             if("jpeg" in mime_type.lower() or "jpg" in mime_type.lower()):
                 ext = ".jpg"
                 print("Entered the if statement, the extension is: ", ext)
-            
-            print("The mime type is: ", mime_type)
             
             # Decoding the image
             nparr = np.frombuffer(img_bytes, np.uint8)
@@ -92,13 +90,31 @@ def clean_img(blob):
             return new_pdf
 
 # This function is for service_invoice only as of now
-def preprocess(src_bucket, blob, mime_type, docType):
+# Unused
+def preprocess(src_bucket, blob, mime_type, ):
+    blob = blob.replace(".jpg", "-0.jpg")
+
+    if("gs://" in src_bucket):
+        match = re.match(r"^gs://([^/]+)", src_bucket)
+        if match:
+            new_bucket = match.group(1)
+        else:
+            raise ValueError(f"Could not extract bucket name from {src_bucket}")
+        
+        print("New bucket name: ", new_bucket)
+    else:
+        new_bucket = src_bucket
+    
     print("the name of the file is: ", blob)
+    new_blob = re.sub(r'-\d(?=\.)', '', blob)
+    print("The new blob name is: ", new_blob)
 
     # Get the pic
-    pic = storage_client.bucket(src_bucket).blob(blob).download_as_bytes()
+    pic = storage_client.bucket(new_bucket).blob(new_blob).download_as_bytes()
+    print("THE BYTES ARE:" ,pic)
 
     ext = ".png" #png by default
+
     if("jpeg" in mime_type.lower() or "jpg" in mime_type.lower()):
         ext = ".jpg"
         print("Entered the if statement, the extension is: ", ext)
@@ -113,27 +129,15 @@ def preprocess(src_bucket, blob, mime_type, docType):
         raise ValueError(f"Failed to decode image: {blob}")
     
     # Preprocess the image
-    img = cv2.medianBlur(img, 1)
+    img = cv2.medianBlur(img, 3)
     img = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
                                 cv2.THRESH_BINARY, 35, 10)
     print("DONE")
 
     _, final_img = cv2.imencode(ext, img)
-    new_pdf = img2pdf.convert(final_img.tobytes())
+    new_pdf = (final_img.tobytes())
 
-    # Fixing the filename
-    filename = re.sub(r'^.*/', '', blob)
-
-    # Replace the extension ignoring sensitive case
-    filename = re.sub(r"\.jpe?g$", ".pdf", filename, flags=re.IGNORECASE)
-
-    # Prepare new name
-    output_blob = f"{docType}/preprocessed_images/{filename}"    
-
-    # Upload the new pdf and return the location
-    storage_client.bucket(BUCKET_NAME).blob(output_blob).upload_from_string(new_pdf, content_type="application/pdf")
-
-    return BUCKET_NAME, output_blob
+    return new_pdf
     
     
 def upload_pdf_gcs(filename, docType, page_list):
@@ -172,16 +176,18 @@ def upload_pdf_gcs(filename, docType, page_list):
 
 if __name__ == '__main__':
 
-
     # For testing purposes
     # GCS setup
     
     bucket = storage_client.bucket("practice_sample_training")
-    blob = bucket.blob("results/15737412520703530062/0/124-0.json")
+    blob = bucket.blob("arayyy moo _24.jpg")
+    print("The initial bucket: ", bucket)
+    print("The initial blob: ", blob)
     
-
-    # Load Document JSON
-    document = documentai.Document.from_json(blob.download_as_bytes())
-    result = clean_img(blob)
-    upload_pdf_gcs(blob.name, "sample", [result])
+    result = preprocess(src_bucket=bucket.name, blob=blob.name, mime_type="image/jpg")
+    # # Load Document JSON
+    # document = documentai.Document.from_json(blob.download_as_bytes())
+    # result = clean_img(blob)
+    
+    upload_pdf_gcs(blob.name, "sample", result)
     print("process done")

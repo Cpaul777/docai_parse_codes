@@ -133,11 +133,9 @@ def batch_process_documents(
         print("Stitching pdf")
         upload_pdf_gcs(blob.name, doc_type, pdf_list)
             
-
 # Process the output 
 def process_output(blob, bucket, userId, doc_type):
     
-
     print(f"Fetching {blob.name}")
     document = documentai.Document.from_json(
         blob.download_as_bytes(),
@@ -185,18 +183,17 @@ def main(mime_type, input, userId, doc_type):
     
     # Set the input mime type
     input_mime_type = mime_type
-    
+   
     # Field mask specifies which data to get from json so it doesnt load everything
     field_mask = "entities,pages.image,pages.blocks"
-
-    """
+    
     # For testing purposes without going through the whole trigger-function
     # hardcoded getting the document and processing it 
-
-    gcs_output_uri = f"gs://processed_output_bucket/processed_path/{doc_type}"                  
-    gcs_input_uri = f"gs://practice_sample_training/BRO WAHAPEN TO YOU.jpg"
-    input_mime_type = "image/jpeg"
     """
+    gcs_output_uri = f"gs://processed_output_bucket/processed_path/{doc_type}"                  
+    gcs_input_uri = f"gs://practice_sample_training/training_sample/form_2307_intern2/Dummy 2307 2.pdf"
+    input_mime_type = mime_type
+     """
     
     # This is for whole folder process
     gcs_input_prefix = f"gs://run-sources-medtax-ocr-prototype-us-central1/{input}"
@@ -223,4 +220,4 @@ def main(mime_type, input, userId, doc_type):
     )
 
 if __name__ == '__main__':
-    main("application/pdf", "2307 - BEA  SAMPLE (5).pdf", userId="sample", doc_type="form2307")
+    main("Application/pdf", "2307 - BEA  SAMPLE (5).pdf", userId="sample", doc_type="form2307")

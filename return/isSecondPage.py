@@ -1,12 +1,7 @@
 
 
 def isRelevant(document):
-    if (document.get("payor_tin_no") != "" and document.get("to_date") != ""):
-        return True
-    
-    return False
-
-
+    return bool(document.get("payor_tin_no") and document.get("to_date"))
 if __name__ == '__main__':
     document= {
         "form_no": "2307",

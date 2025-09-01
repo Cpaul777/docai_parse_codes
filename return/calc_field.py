@@ -1,4 +1,4 @@
-
+import math
 def calculateTable(data: dict) -> dict:
     tables = data["table_rows"]
     if tables:
@@ -8,16 +8,28 @@ def calculateTable(data: dict) -> dict:
         # Get the Total row and create new key value pairs with net_amount, gross_amount and withheld_amount
         # Based on the calculated data
         for i, table in enumerate(tables):
-            if "Total" in table["income_payment_subject"] and i != table_length - 1:
+            if "Total" in table["income_payment_subject"] and i != table_length - 1 and table.get("total_quarter") and table.get("tax_withheld_quarter"):
                 tq = float(table.get("total_quarter", 0).replace(",", "") or 0)
                 twq = float(table.get("tax_withheld_quarter", 0).replace(",", "") or 0)
 
                 net_amount = tq - twq
-                data['net_amount'] = f"{net_amount:,.2f}"
-                data['gross_amount'] = f"{tq:,.2f}"
-                data['withheld_amount'] = f"{twq:,.2f}"
+                data['net_amount'] = round(net_amount, 2)
+                data['gross_amount'] = round(tq, 2)
+                data['withheld_amount'] = round(twq, 2)
                 break
 
+            # There are cases where the total_quarter and tax_withheld_quarter values are in the same row as the Money Payments row
+            elif "Money Payments" in table["income_payment_subject"] and (table.get("total_quarter") and table.get("tax_withheld_quarter")):
+                tq = float(table.get("total_quarter", 0).replace(",", "") or 0)
+                twq = float(table.get("tax_withheld_quarter", 0).replace(",", "") or 0)
+
+                net_amount = tq - twq
+                data['net_amount'] = round(net_amount, 2)
+                data['gross_amount'] = round(tq, 2)
+                data['withheld_amount'] = round(twq, 2)
+                break
+            else:
+                print("Missing total Values when parsing for net_amount, gross_amount etc.")
         return data
     else:
         return data
@@ -35,17 +47,16 @@ def calculateForServiceInvoice(data:dict):
         withheld_tax = float(table2[0].get("Less_Witholding_Tax", 0).replace(",", "") or 0)
         net_amount = float(table2[0].get("Total_Amount_Due", 0).replace(",","") or 0)
         
-        tax_rate = (withheld_tax / amountNetAndGross)* 100
+        tax_rate = (withheld_tax / amountNetAndGross) * 100
 
-        data['gross_amount'] = f"{amountNetAndGross:,.2f}"
-        data['withheld_amount'] = f"{withheld_tax:,.2f}"
-        data['tax_rate'] = f"{tax_rate:,.2f}"
-        data['net_receipt'] = f"{amountNetAndGross:,.2f}"
-        data['net_amount'] = f"{net_amount:,.2f}"
+        data['gross_amount'] = round(amountNetAndGross, 2)
+        data['withheld_amount'] = round(withheld_tax, 2)
+        data['tax_rate'] = round(tax_rate, 2)
+        data['net_receipt'] = round(amountNetAndGross, 2)
+        data['net_amount'] = round(net_amount, 2)
         return data
     else:
         return data
-
 
 if __name__ == '__main__':
     from pprint import pprint
@@ -134,5 +145,5 @@ if __name__ == '__main__':
         ]
     }
 
-    # pprint(calculateTable(data))
-    pprint(calculateForServiceInvoice(service_invoice_data))
+    pprint(calculateTable(data))
+    # pprint(calculateForServiceInvoice(service_invoice_data))

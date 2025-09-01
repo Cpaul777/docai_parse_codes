@@ -1,6 +1,6 @@
 from datetime import datetime
 from dateutil import parser
-
+import json
 # CAPTURE ENYE CHARACTER ñ LATER
 
 # below is only used in __app__==__main__
@@ -13,16 +13,16 @@ def handle_data(document):
         "form_title": "Certificate of Creditable Income Taxes Withheld at Source",
         "from_date": "",
         "to_date": "",
-        "payee_tin_no": "",
+        "payee_tin_no": 0,
         "payee_name": "",
         "payee_registered_address": "",
         "zip_code_4A": "",
         "payee_foreign_address": "",
-        "payor_tin_no": "",
+        "payor_tin_no": 0,
         "payor_name": "",
         "payor_registered_address": "",
         "zip_code_8A": "",
-        "confidence_average" : "0.0",
+        "confidence_average" : 0,
     }
     
     table_values = ["income_payment_subject",
@@ -34,17 +34,6 @@ def handle_data(document):
                     "tax_withheld_quarter",]
     table_rows = []
     
-    """ 
-    # FOR TESTING PURPOSES
-    storage_client = storage.Client()
-    bucket = storage_client.bucket(gcs_bucket)
-    blob = bucket.blob(input_prefix)
-    
-    document = documentai.Document.from_json(
-                blob.download_as_bytes(),
-                ignore_unknown_fields=True
-            )
-    """
     # Extract form fields (labeled data) to only get the Key Value Pairs from raw json
     extracted_data = {}
 
@@ -82,7 +71,7 @@ def handle_data(document):
         extracted_data[f"{key}_confidence"] = confidence
 
     # Printed in the logs, for debugging purposes
-    # print(json.dumps(table_rows, indent=2))
+    print(json.dumps(table_rows, indent=2))
 
     data = extracted_data
     count = 0
@@ -117,7 +106,7 @@ def handle_data(document):
             field_values[key] = ""
 
     # For debugging purposes, printed at logs
-    # print(json.dumps(field_values, indent=2))
+    print(json.dumps(field_values, indent=2))
 
     # Validate the date range
     if field_values["from_date"] and field_values["to_date"]:
@@ -135,7 +124,7 @@ def handle_data(document):
     if count != 0:
         confidence /= count
 
-    field_values["confidence_average"] = str(round(confidence, 2))
+    field_values["confidence_average"] = round(confidence, 2)
     try:
         # Adding table_row key to the field_values and its value is the table rows
         extracted_data.clear()
@@ -182,14 +171,14 @@ def norm_tin(num):
         num = num.replace(k, v)
 
     num = ''.join(filter(str.isdigit, num))  # Remove non-numeric characters
-    if len(num) == 9:
-        num = f"{num[:3]}-{num[3:6]}-{num[6:]}"  # Format XXX-XXX-XXX
-    elif len(num) > 9 and len(num) < 15:
-        num = f"{num[:3]}-{num[3:6]}-{num[6:9]}-{num[9:]}" # Format XXX-XXX-XXX-XXXX
-    else:
-        num = f"{num[:3]}-{num[3:6]}-{num[6:9]}-{num[9:]} [INVALID]"
+    # if len(num) == 9:
+    #     num = f"{num[:3]}-{num[3:6]}-{num[6:]}"  # Format XXX-XXX-XXX
+    # elif len(num) > 9 and len(num) < 15:
+    #     num = f"{num[:3]}-{num[3:6]}-{num[6:9]}-{num[9:]}" # Format XXX-XXX-XXX-XXXX
+    # else:
+    #     num = f"{num[:3]}-{num[3:6]}-{num[6:9]}-{num[9:]} [INVALID]"
 
-    return num
+    return int(num)
 
 def norm_date(date_str):
     

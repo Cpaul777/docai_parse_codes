@@ -129,7 +129,7 @@ def batch_process_documents(
             if blob.name.endswith("_finalized.json"):
                 continue
             process_output(blob, bucket, userId, doc_type)
-            pdf_list.append(clean_img(blob))
+            pdf_list.append(clean_img(blob=blob))
         print("Stitching pdf")
         upload_pdf_gcs(blob.name, doc_type, pdf_list)
             
@@ -165,10 +165,10 @@ def process_output(blob, bucket, userId, doc_type):
 def main(mime_type, bucket, input, userId, doc_type):
 
     # Exclusive to service_invoice where preprocessing happens before processing for document AI
-    if(mime_type != "application/pdf"):
-        print("Preprocessing...")
-        bucket, input = preprocess(src_bucket=bucket, blob=input, mime_type=mime_type, docType=doc_type)
-        mime_type = detect_mime_type(input)
+    # if(mime_type != "application/pdf"):
+    #     print("Preprocessing...")
+    #     bucket, input = preprocess(src_bucket=bucket, blob=input, mime_type=mime_type, docType=doc_type)
+    #     mime_type = detect_mime_type(input)
     
     print(mime_type)
     print("The input location is " , input)
@@ -186,32 +186,30 @@ def main(mime_type, bucket, input, userId, doc_type):
 
     # Processor location. For example: "us" or "eu".
     location = "us"        
-    
+    """
     # Path to the output
     gcs_output_uri = f"gs://processed_output_bucket/processed_path/{doc_type}"
     
     # Configure Input pathing.
     gcs_input_uri = f"gs://{bucket}/{input}"    
-    
+
     # Set the input mime type
     input_mime_type = mime_type
-    
+     """
 
     # Field mask specifies which data to get from json so it doesnt load everything
     field_mask = "entities,pages.image,pages.blocks"
     
-    """
     # For testing purposes without going through the whole trigger-function
     # hardcoded getting the document and processing it 
     
     gcs_output_uri = f"gs://practice_sample_training/{doc_type}_tests"                 
     gcs_input_uri = f"gs://{bucket}/{input}"
     input_mime_type = mime_type
-    
+   
     print(gcs_output_uri)
     print(gcs_input_uri)
-    """
-
+   
     # This is for whole folder process
     gcs_input_prefix = f"gs://{bucket}/{input}"
     
@@ -235,4 +233,4 @@ def main(mime_type, bucket, input, userId, doc_type):
     )
 
 if __name__ == '__main__':
-    main("image/jpeg", "practice_sample_training","ARAYY MOOOO_36.jpg", userId="sample", doc_type="service_invoice")
+    main("image/jpeg", "run-sources-medtax-ocr-prototype-us-central1","service_invoice/arayyy moo _25.jpg", userId="sample", doc_type="service_invoice")

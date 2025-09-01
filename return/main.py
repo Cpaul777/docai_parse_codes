@@ -43,7 +43,7 @@ def sendTrigger(event: CloudEvent):
     name = re.sub(r'-\d+_finalized\.json$', '', name)
 
     if(doc_type == "form2307"):
-
+        print(f"Processing {doc_type}")
         # Check if its an irrelevant second page
         if(isRelevant(document)):
             document = quarter(document)
@@ -54,11 +54,18 @@ def sendTrigger(event: CloudEvent):
             firestore_write.write_to_firestore(document, name, doc_type)
         else:
             print("Irrelevant document, skipping...")
+
     elif(doc_type == "service_invoice"):
-            print("It is service invoice")
+            print(f"Processing {doc_type}")
             document = quarter(document)
             document = calculateForServiceInvoice(document)
             firestore_write.write_to_firestore(document, name, doc_type)
+            
+    elif(doc_type == "expense_receipt"):
+        print(f"Processing {doc_type}")
+        document = quarter(document)
+        document = calculateForServiceInvoice(document) #Not yet final
+        firestore_write.write_to_firestore(document, name, doc_type) #Not yet final
     else:
         print("Irrelevant, didnt write")
         print("Process Done", name)

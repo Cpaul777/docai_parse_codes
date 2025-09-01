@@ -14,7 +14,7 @@ def handle_data(document):
         "Date": "",
         "Business_Address": "",
         "Registered_Name": "",
-        "Sold_To_Tin": "",
+        "Sold_To_Tin": 0,
     }
 
     table_one_values = ["Amount",
@@ -71,7 +71,7 @@ def handle_data(document):
                 value = property.mention_text
                 value = norm_currency(value)
                 if property_type in table_two_values:
-                        row_dict2[property_type] = value
+                    row_dict2[property_type] = value
             
             Item_Table_2.append(row_dict2)
         
@@ -91,12 +91,11 @@ def handle_data(document):
         extracted_data[key] = value
 
         # Included confidence, only average confidence are taken of the final output
-        extracted_data[f"{key}_confidence"] = confidence
+        extracted_data[f"{key}_confidence"] = float(confidence)
 
     # Printed in the logs, for debugging purposes
     # print(json.dumps(Item_Table, indent=2))
     # print(json.dumps(Item_Table_2, indent=2))
-
 
     data = extracted_data
     count = 0
@@ -141,7 +140,7 @@ def handle_data(document):
     if count != 0:
         confidence /= count
 
-    field_values["confidence_average"] = str(round(confidence, 2))
+    field_values["confidence_average"] = round(confidence, 2)
     try:
         # Adding table_row key to the field_values and its value is the table rows
         return {**field_values, "Item_Table": Item_Table, "Item_Table_2": Item_Table_2}
@@ -153,17 +152,16 @@ def norm_currency(currency):
     Normalize currency received
     
     Args:
-        The amount/number
+        currency (float): The number to be normalized
     
     Returns:
-        str: The normalized currency in string in format.
+        float: The normalized currency in string in format.
     """
     mapping = {"O": "0", "o": "0", "I": "1", "l": "1", "S": "5", "p":"0"}
     for k, v in mapping.items():
         currency = currency.replace(k, v)
-    
-    cleaned = re.sub(r"[^0-9.,-]", "", currency) #Removes non number values
-    return currency
+    cleaned = re.sub(r"[^0-9.]", "", currency) #Removes non number values
+    return float(cleaned)
 
 def norm_tin(num):
     """
@@ -173,7 +171,7 @@ def norm_tin(num):
         9 digits, and 12 digits
 
     Args:
-        num (str): The TIN string to normalize.
+        num (num): The TIN string to normalize.
     
     Returns:
         str: The normalized TIN string in a 9-13 digit format.
@@ -181,16 +179,8 @@ def norm_tin(num):
     mapping = {"O": "0", "o": "0", "I": "1", "l": "1", "S": "5", "p":"0"}
     for k, v in mapping.items():
         num = num.replace(k, v)
-    
     num = ''.join(filter(str.isdigit, num))  # Remove non-numeric characters
-    if len(num) == 9:
-        num = f"{num[:3]}-{num[3:6]}-{num[6:]}"  # Format XXX-XXX-XXX
-    elif len(num) > 9 and len(num) < 15:
-        num = f"{num[:3]}-{num[3:6]}-{num[6:9]}-{num[9:]}" # Format XXX-XXX-XXX-XXXX
-    else:
-        num = f"{num[:3]}-{num[3:6]}-{num[6:9]}-{num[9:]} [INVALID]"
-
-    return num
+    return int(num)
 
 def norm_date(date_str):
     
