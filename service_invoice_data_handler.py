@@ -161,7 +161,7 @@ def norm_currency(currency):
     for k, v in mapping.items():
         currency = currency.replace(k, v)
     cleaned = re.sub(r"[^0-9.]", "", currency) #Removes non number values
-    return float(cleaned)
+    return cleaned
 
 def norm_tin(num):
     """
