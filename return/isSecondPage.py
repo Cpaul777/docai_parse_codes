@@ -1,7 +1,7 @@
 
 
 def isRelevant(document):
-    if (document.get("payor_tin_no" != "") and document.get("to_date") != ""):
+    if (document.get("payor_tin_no") != "" and document.get("to_date") != ""):
         return True
     
     return False
