@@ -186,7 +186,7 @@ def main(mime_type, bucket, input, userId, doc_type):
 
     # Processor location. For example: "us" or "eu".
     location = "us"        
-    """
+    
     # Path to the output
     gcs_output_uri = f"gs://processed_output_bucket/processed_path/{doc_type}"
     
@@ -195,18 +195,18 @@ def main(mime_type, bucket, input, userId, doc_type):
 
     # Set the input mime type
     input_mime_type = mime_type
-     """
+    
 
     # Field mask specifies which data to get from json so it doesnt load everything
     field_mask = "entities,pages.image,pages.blocks"
     
     # For testing purposes without going through the whole trigger-function
     # hardcoded getting the document and processing it 
-    
+    """
     gcs_output_uri = f"gs://practice_sample_training/{doc_type}_tests"                 
     gcs_input_uri = f"gs://{bucket}/{input}"
     input_mime_type = mime_type
-   
+    """
     print(gcs_output_uri)
     print(gcs_input_uri)
    
