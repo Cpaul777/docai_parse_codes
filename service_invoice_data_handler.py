@@ -155,7 +155,7 @@ def norm_currency(currency):
         currency (float): The number to be normalized
     
     Returns:
-        float: The normalized currency in string in format.
+        str: The normalized currency in string in format.
     """
     mapping = {"O": "0", "o": "0", "I": "1", "l": "1", "S": "5", "p":"0"}
     for k, v in mapping.items():
