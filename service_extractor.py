@@ -9,9 +9,6 @@ from google.cloud import storage
 # Import image processing helpers
 from image_extract import clean_img, upload_pdf_gcs
 
-# Detect MIME type helper
-from detect_mime_type import detect_mime_type
-
 # Type hints
 from typing import Optional
 
