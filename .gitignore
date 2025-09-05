@@ -7,7 +7,7 @@
 # Python virtual environment
 venv/
 .env/
-
+.env
 # IDE/project files
 .idea/
 .vscode/
