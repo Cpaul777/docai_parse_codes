@@ -178,13 +178,15 @@ def norm_zip_code(zip_code):
 
 def norm_tin(num):
     """
-    Normalize TIN (Tax Identification Number) strings to a standard format.
-
+    Normalize TIN (Tax Identification Number).
+    - Replace OCR misreads.
+    - Keep only digits.
+    - Currently returns as integer.
     Args:
         num (str): The TIN string to normalize.
     
     Returns:
-        str: The normalized TIN string in a 9-13 digit format.
+        int: The normalized TIN.
     """
     
     mapping = {"O": "0", "o": "0", "I": "1", "l": "1", "S": "5", "p":"0"}
