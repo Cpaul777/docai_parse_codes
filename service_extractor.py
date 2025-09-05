@@ -168,7 +168,6 @@ def batch_process_documents(
         print("Stitching pdf")
         upload_pdf_gcs(blob.name, doc_type, pdf_list)
             
-
 # Process the output 
 def process_output(blob, bucket, userId, doc_type):
      """
@@ -177,7 +176,6 @@ def process_output(blob, bucket, userId, doc_type):
     - Extracts entities/fields with data handler
     - Writes extracted fields into a new *_finalized.json in GCS
     """
-
 
     print(f"Fetching {blob.name}")
     document = documentai.Document.from_json(
