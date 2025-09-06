@@ -168,7 +168,7 @@ def batch_process_documents(
             
 # Process the output 
 def process_output(blob, bucket, userId, doc_type):
-     """
+    """
     Processes a single Document AI JSON shard:
     - Loads JSON into Document object
     - Extracts entities/fields with data handler
@@ -203,7 +203,7 @@ def process_output(blob, bucket, userId, doc_type):
     print(f"Extracted fields saved to: gs://{bucket}/{output_blob_name}")
 
 def main(mime_type, input, userId, doc_type):
-     """
+    """
     Entrypoint for running document extraction.
     - Configures project, processor, paths
     - Calls batch_process_documents
@@ -241,7 +241,7 @@ def main(mime_type, input, userId, doc_type):
     gcs_output_uri = f"gs://processed_output_bucket/processed_path/{doc_type}"                  
     gcs_input_uri = f"gs://practice_sample_training/training_sample/form_2307_intern2/Dummy 2307 2.pdf"
     input_mime_type = mime_type
-     """
+    """
     
     # This is for whole folder process
     gcs_input_prefix = f"gs://run-sources-medtax-ocr-prototype-us-central1/{input}"
