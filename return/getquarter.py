@@ -1,15 +1,29 @@
 from datetime import datetime
 from dateutil import parser
 
+# Adds a "quarter" field to the given document data
+# Quarters:
+#   Jan–Mar  → 1st Quarter
+#   Apr–Jun  → 2nd Quarter
+#   Jul–Sep  → 3rd Quarter
+#   Oct–Dec  → 4th Quarter
+
+# Get the quarter field
 def quarter(data: dict) -> dict:
+    # Get the data
     date = data.get("to_date") or data.get("Date")
+    
+    # Process if the date exist
     if (date):
+        # Parse the date string into a datetime obj
         dateToCompare = parser.parse(str(date))
         print(dateToCompare)
 
+        # Extract month from the parsed date
         month = int(dateToCompare.month)
         print("The month is", month)
 
+        # Determine which quarter the month belong
         if(month >= 1 and month <= 3):
             data['quarter'] = "1st Quarter"
         elif(month >= 4 and month <= 6):
