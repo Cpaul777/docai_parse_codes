@@ -1,7 +1,9 @@
 
-
+# Checks for second page, currently usable only to 2307
 def isRelevant(document):
     return bool(document.get("payor_tin_no") and document.get("to_date"))
+
+# Used for testing
 if __name__ == '__main__':
     document= {
         "form_no": "2307",
