@@ -170,7 +170,7 @@ def batch_process_documents(
             
 # Process the output 
 def process_output(blob, bucket, userId, doc_type):
-     """
+    """
     Processes a single Document AI JSON shard:
     - Loads JSON into Document object
     - Extracts entities/fields with data handler
